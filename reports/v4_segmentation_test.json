@@ -1,0 +1,832 @@
+{
+  "manifest_sha256": "200d8e888b79ec2f0f817c3da2a7d3bbae30f4c098b2d5bf174817b3e660504d",
+  "models": {
+    "deeplabv3_mobilenet_v3_large": {
+      "global_pixel_metrics_across_seeds": {
+        "lane_accuracy": {
+          "mean": 0.984047440228985,
+          "per_seed": [
+            0.9845236651518245,
+            0.9842259359255854,
+            0.9833927196095451
+          ],
+          "sample_standard_deviation": 0.0005862209397309786
+        },
+        "lane_dice": {
+          "mean": 0.3152856436279538,
+          "per_seed": [
+            0.3173441257551744,
+            0.3165227211182218,
+            0.3119900840104652
+          ],
+          "sample_standard_deviation": 0.002883437408496676
+        },
+        "lane_iou": {
+          "mean": 0.18714718297015634,
+          "per_seed": [
+            0.1885971639314534,
+            0.18801722190659248,
+            0.18482716307242322
+          ],
+          "sample_standard_deviation": 0.0020300129143574993
+        },
+        "lane_precision": {
+          "mean": 0.22169941466548695,
+          "per_seed": [
+            0.22556491286583652,
+            0.2233152575995299,
+            0.21621807353109443
+          ],
+          "sample_standard_deviation": 0.00487842829997458
+        },
+        "lane_recall": {
+          "mean": 0.5461300105485124,
+          "per_seed": [
+            0.5350474683544199,
+            0.5432753164556855,
+            0.560067246835432
+          ],
+          "sample_standard_deviation": 0.012751834675153412
+        },
+        "lane_tolerant_f1": {
+          "mean": 0.654225697268536,
+          "per_seed": [
+            0.6576207995459468,
+            0.6521877357491457,
+            0.6528685565105151
+          ],
+          "sample_standard_deviation": 0.002959884935743023
+        },
+        "lane_tolerant_precision": {
+          "mean": 0.6410009128394432,
+          "per_seed": [
+            0.6521804385891715,
+            0.6377753026398107,
+            0.6330469972893472
+          ],
+          "sample_standard_deviation": 0.009966221192780896
+        },
+        "lane_tolerant_recall": {
+          "mean": 0.6681302742615903,
+          "per_seed": [
+            0.6631526898734047,
+            0.6672666139240375,
+            0.6739715189873284
+          ],
+          "sample_standard_deviation": 0.005460878842555215
+        },
+        "road_accuracy": {
+          "mean": 0.9738723876775826,
+          "per_seed": [
+            0.9743742766203702,
+            0.9735716443695532,
+            0.973671242042824
+          ],
+          "sample_standard_deviation": 0.0004374920654134174
+        },
+        "road_dice": {
+          "mean": 0.8942015632246861,
+          "per_seed": [
+            0.8962450252399079,
+            0.8934714350493489,
+            0.8928882293848016
+          ],
+          "sample_standard_deviation": 0.0017935537258556417
+        },
+        "road_iou": {
+          "mean": 0.8086510561403889,
+          "per_seed": [
+            0.8119963630829498,
+            0.8074544691841695,
+            0.8065023361540475
+          ],
+          "sample_standard_deviation": 0.002935974834994592
+        },
+        "road_precision": {
+          "mean": 0.8916640357471279,
+          "per_seed": [
+            0.8935902955294279,
+            0.88690171524524,
+            0.8945000964667158
+          ],
+          "sample_standard_deviation": 0.004149301972428497
+        },
+        "road_recall": {
+          "mean": 0.8967789826937764,
+          "per_seed": [
+            0.898915575600288,
+            0.9001392115378167,
+            0.8912821609432247
+          ],
+          "sample_standard_deviation": 0.004799542503708822
+        },
+        "selection_score": {
+          "mean": 0.7314383767044624,
+          "per_seed": [
+            0.7348085813144483,
+            0.7298211024666577,
+            0.7296854463322813
+          ],
+          "sample_standard_deviation": 0.002919470839309063
+        }
+      },
+      "latency": {
+        "batch_1_median_ms": 3.198200138285756,
+        "batch_1_p95_ms": 3.4203150193206966
+      },
+      "parameters": 11020594,
+      "recording_bootstrap_on_seed_mean_per_image_metrics": {
+        "lane_iou": {
+          "confidence": 0.95,
+          "estimate": 0.1775878415018881,
+          "lower": 0.1546370589402047,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.19984839200451254
+        },
+        "lane_tolerant_f1": {
+          "confidence": 0.95,
+          "estimate": 0.6125535218731144,
+          "lower": 0.556520241960965,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.6622226025833112
+        },
+        "road_iou": {
+          "confidence": 0.95,
+          "estimate": 0.8085014582582756,
+          "lower": 0.7798156169772011,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.8334474385159357
+        },
+        "selection_score": {
+          "confidence": 0.95,
+          "estimate": 0.7105274900656949,
+          "lower": 0.6753549423115754,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.7412138418247375
+        }
+      },
+      "seed_count": 3
+    },
+    "resnet18_fourier_unet": {
+      "global_pixel_metrics_across_seeds": {
+        "lane_accuracy": {
+          "mean": 0.99485558293051,
+          "per_seed": [
+            0.9952401886318762,
+            0.9947617474724263,
+            0.9945648126872275
+          ],
+          "sample_standard_deviation": 0.0003473283555194948
+        },
+        "lane_dice": {
+          "mean": 0.6569250692638297,
+          "per_seed": [
+            0.6700100485835123,
+            0.6519284294234534,
+            0.6488367297845231
+          ],
+          "sample_standard_deviation": 0.011436877393403037
+        },
+        "lane_iou": {
+          "mean": 0.4891925100602769,
+          "per_seed": [
+            0.503770759974485,
+            0.4836007550731413,
+            0.48020601513320427
+          ],
+          "sample_standard_deviation": 0.012738724140814983
+        },
+        "lane_precision": {
+          "mean": 0.596736399072026,
+          "per_seed": [
+            0.6274756963030645,
+            0.5891719236604553,
+            0.5735615772525582
+          ],
+          "sample_standard_deviation": 0.027741647832045527
+        },
+        "lane_recall": {
+          "mean": 0.731744462025302,
+          "per_seed": [
+            0.7187302215189731,
+            0.7296479430379603,
+            0.7468552215189727
+          ],
+          "sample_standard_deviation": 0.014179226006669278
+        },
+        "lane_tolerant_f1": {
+          "mean": 0.8651254093194941,
+          "per_seed": [
+            0.8751681159171579,
+            0.8579253430415241,
+            0.8622827689998005
+          ],
+          "sample_standard_deviation": 0.008965977754853867
+        },
+        "lane_tolerant_precision": {
+          "mean": 0.8768453117923513,
+          "per_seed": [
+            0.894186106746311,
+            0.8734328834943564,
+            0.8629169451363864
+          ],
+          "sample_standard_deviation": 0.015911430391816243
+        },
+        "lane_tolerant_recall": {
+          "mean": 0.8538502109704473,
+          "per_seed": [
+            0.8569422468354262,
+            0.842958860759477,
+            0.8616495253164387
+          ],
+          "sample_standard_deviation": 0.009721406777722687
+        },
+        "road_accuracy": {
+          "mean": 0.9810058327801605,
+          "per_seed": [
+            0.980982030398965,
+            0.9805530556406589,
+            0.9814824123008578
+          ],
+          "sample_standard_deviation": 0.0004651353195328649
+        },
+        "road_dice": {
+          "mean": 0.9226478064751257,
+          "per_seed": [
+            0.922540657759907,
+            0.9212017957322259,
+            0.9242009659332442
+          ],
+          "sample_standard_deviation": 0.0015024533633523306
+        },
+        "road_iou": {
+          "mean": 0.8564055520067076,
+          "per_seed": [
+            0.8562185333526346,
+            0.8539148397614218,
+            0.8590832829060667
+          ],
+          "sample_standard_deviation": 0.0025892920108758054
+        },
+        "road_precision": {
+          "mean": 0.9253649123908624,
+          "per_seed": [
+            0.925281843080462,
+            0.9191722390855309,
+            0.9316406550065942
+          ],
+          "sample_standard_deviation": 0.006234623026126274
+        },
+        "road_recall": {
+          "mean": 0.9199783856717585,
+          "per_seed": [
+            0.9198156662119872,
+            0.9232403348420872,
+            0.9168791559612012
+          ],
+          "sample_standard_deviation": 0.003183709692418405
+        },
+        "selection_score": {
+          "mean": 0.8607654806631011,
+          "per_seed": [
+            0.8656933246348963,
+            0.855920091401473,
+            0.8606830259529337
+          ],
+          "sample_standard_deviation": 0.004887138328627951
+        }
+      },
+      "latency": {
+        "batch_1_median_ms": 4.994749906472862,
+        "batch_1_p95_ms": 5.306050006765872
+      },
+      "parameters": 56844738,
+      "recording_bootstrap_on_seed_mean_per_image_metrics": {
+        "lane_iou": {
+          "confidence": 0.95,
+          "estimate": 0.47317281491133545,
+          "lower": 0.4271826709201338,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.5135610314546559
+        },
+        "lane_tolerant_f1": {
+          "confidence": 0.95,
+          "estimate": 0.8355187422007941,
+          "lower": 0.7888633411268507,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.8753903519372589
+        },
+        "road_iou": {
+          "confidence": 0.95,
+          "estimate": 0.858548959072471,
+          "lower": 0.833135034377667,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.8808775666159053
+        },
+        "selection_score": {
+          "confidence": 0.95,
+          "estimate": 0.8470338506366325,
+          "lower": 0.8186977491599339,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.8733204476361011
+        }
+      },
+      "seed_count": 3
+    },
+    "resnet18_unet": {
+      "global_pixel_metrics_across_seeds": {
+        "lane_accuracy": {
+          "mean": 0.9941636295360157,
+          "per_seed": [
+            0.9936877148863016,
+            0.9937557976749727,
+            0.9950473760467727
+          ],
+          "sample_standard_deviation": 0.0007661036078656565
+        },
+        "lane_dice": {
+          "mean": 0.6357603207381395,
+          "per_seed": [
+            0.6208284742080241,
+            0.6237219141639105,
+            0.6627305738424839
+          ],
+          "sample_standard_deviation": 0.02340168611615151
+        },
+        "lane_iou": {
+          "mean": 0.46630852093046365,
+          "per_seed": [
+            0.45014594819996695,
+            0.4531946854221683,
+            0.49558492916925573
+          ],
+          "sample_standard_deviation": 0.025399896834156988
+        },
+        "lane_precision": {
+          "mean": 0.5520529651207853,
+          "per_seed": [
+            0.5207010209823871,
+            0.5242604666199616,
+            0.6111974077600072
+          ],
+          "sample_standard_deviation": 0.05125149982819886
+        },
+        "lane_recall": {
+          "mean": 0.7540479957805758,
+          "per_seed": [
+            0.7686313291139089,
+            0.7697587025316304,
+            0.7237539556961883
+          ],
+          "sample_standard_deviation": 0.026241463205804786
+        },
+        "lane_tolerant_f1": {
+          "mean": 0.8608534195931239,
+          "per_seed": [
+            0.8603440871955585,
+            0.8616948340174545,
+            0.8605213375663587
+          ],
+          "sample_standard_deviation": 0.000734055923340221
+        },
+        "lane_tolerant_precision": {
+          "mean": 0.8466028824506217,
+          "per_seed": [
+            0.8405150467615183,
+            0.8378414785279266,
+            0.86145212206242
+          ],
+          "sample_standard_deviation": 0.012929111708132475
+        },
+        "lane_tolerant_recall": {
+          "mean": 0.8758900316455523,
+          "per_seed": [
+            0.8811313291139067,
+            0.886946202531628,
+            0.8595925632911223
+          ],
+          "sample_standard_deviation": 0.014410371067004716
+        },
+        "road_accuracy": {
+          "mean": 0.9811948777630265,
+          "per_seed": [
+            0.9814949118753403,
+            0.9812591486247275,
+            0.9808305727890113
+          ],
+          "sample_standard_deviation": 0.0003368006281971154
+        },
+        "road_dice": {
+          "mean": 0.9234965238951728,
+          "per_seed": [
+            0.9247120090845691,
+            0.9236050506441226,
+            0.922172511956827
+          ],
+          "sample_standard_deviation": 0.0012732222731639234
+        },
+        "road_iou": {
+          "mean": 0.8578684688695032,
+          "per_seed": [
+            0.8599668339058903,
+            0.8580540545984672,
+            0.855584518104152
+          ],
+          "sample_standard_deviation": 0.0021970444905913145
+        },
+        "road_precision": {
+          "mean": 0.9251778938979127,
+          "per_seed": [
+            0.9264406816407933,
+            0.927135013956828,
+            0.9219579860961171
+          ],
+          "sample_standard_deviation": 0.002810049649084689
+        },
+        "road_recall": {
+          "mean": 0.9218262595368173,
+          "per_seed": [
+            0.9229897756739437,
+            0.9201018652618063,
+            0.9223871376747019
+          ],
+          "sample_standard_deviation": 0.0015234647522344078
+        },
+        "selection_score": {
+          "mean": 0.8593609442313136,
+          "per_seed": [
+            0.8601554605507244,
+            0.8598744443079609,
+            0.8580529278352553
+          ],
+          "sample_standard_deviation": 0.0011414563948929902
+        }
+      },
+      "latency": {
+        "batch_1_median_ms": 2.9319999739527702,
+        "batch_1_p95_ms": 3.3321499824523926
+      },
+      "parameters": 14374338,
+      "recording_bootstrap_on_seed_mean_per_image_metrics": {
+        "lane_iou": {
+          "confidence": 0.95,
+          "estimate": 0.45433980399687857,
+          "lower": 0.40930458449634133,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.49394161203482034
+        },
+        "lane_tolerant_f1": {
+          "confidence": 0.95,
+          "estimate": 0.8316167972755651,
+          "lower": 0.7829707691018847,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.874882937714259
+        },
+        "road_iou": {
+          "confidence": 0.95,
+          "estimate": 0.8604658103685485,
+          "lower": 0.8343664761696085,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.883354433634136
+        },
+        "selection_score": {
+          "confidence": 0.95,
+          "estimate": 0.8460413038220568,
+          "lower": 0.8161685333547838,
+          "n_groups": 51,
+          "n_resamples": 2000,
+          "n_samples": 51,
+          "upper": 0.8743061599176536
+        }
+      },
+      "seed_count": 3
+    }
+  },
+  "paired_difference_candidate_minus_deeplab": {
+    "resnet18_fourier_unet": {
+      "delta_lane_tolerant_f1": {
+        "confidence": 0.95,
+        "estimate": 0.22296522032767985,
+        "lower": 0.188347517646802,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.2611678968382487
+      },
+      "delta_road_iou": {
+        "confidence": 0.95,
+        "estimate": 0.05004750081419525,
+        "lower": 0.037788435664088516,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.0641914298050947
+      },
+      "delta_selection_score": {
+        "confidence": 0.95,
+        "estimate": 0.13650636057093757,
+        "lower": 0.11786194545771034,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.15770848881035615
+      }
+    },
+    "resnet18_unet": {
+      "delta_lane_tolerant_f1": {
+        "confidence": 0.95,
+        "estimate": 0.21906327540245077,
+        "lower": 0.1808594577894333,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.2582575822314287
+      },
+      "delta_road_iou": {
+        "confidence": 0.95,
+        "estimate": 0.05196435211027274,
+        "lower": 0.0377880478493241,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.06762233563807957
+      },
+      "delta_selection_score": {
+        "confidence": 0.95,
+        "estimate": 0.13551381375636176,
+        "lower": 0.11645906453650377,
+        "n_groups": 51,
+        "n_resamples": 2000,
+        "n_samples": 51,
+        "upper": 0.1560494406490228
+      }
+    }
+  },
+  "policy": {
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "sampling_unit": "one complete recording/keyframe",
+    "seed_reduction_before_bootstrap": "arithmetic mean of each per-image metric",
+    "test_access": "after all model checkpoints and class thresholds were frozen",
+    "threshold_source": "validation only, independently per seed"
+  },
+  "privacy": {
+    "licensed_images_or_masks_persisted": false,
+    "per_sample_metrics_external_only": true,
+    "raw_identifiers_persisted": false
+  },
+  "private_per_sample_sha256": "ba9e13c60db414a502b7f15db24c308d841165887ebddf8407071e1a070d55e6",
+  "recording_group_count": 51,
+  "runs": [
+    {
+      "checkpoint_sha256": "cf48c2cb7e127c82dc2ee9db790fdac83ba786285d669115917eea6e0704cd1d",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9845236651518245,
+        "lane_dice": 0.3173441257551744,
+        "lane_iou": 0.1885971639314534,
+        "lane_precision": 0.22556491286583652,
+        "lane_recall": 0.5350474683544199,
+        "lane_tolerant_f1": 0.6576207995459468,
+        "lane_tolerant_precision": 0.6521804385891715,
+        "lane_tolerant_recall": 0.6631526898734047,
+        "road_accuracy": 0.9743742766203702,
+        "road_dice": 0.8962450252399079,
+        "road_iou": 0.8119963630829498,
+        "road_precision": 0.8935902955294279,
+        "road_recall": 0.898915575600288,
+        "selection_score": 0.7348085813144483
+      },
+      "model_name": "deeplabv3_mobilenet_v3_large",
+      "seed": 2026,
+      "validation_fitted_thresholds": {
+        "lane": 0.55,
+        "road": 0.55
+      }
+    },
+    {
+      "checkpoint_sha256": "1385cc44760f89298019dd0627a86809bd06205707a2c899700a362487717641",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9842259359255854,
+        "lane_dice": 0.3165227211182218,
+        "lane_iou": 0.18801722190659248,
+        "lane_precision": 0.2233152575995299,
+        "lane_recall": 0.5432753164556855,
+        "lane_tolerant_f1": 0.6521877357491457,
+        "lane_tolerant_precision": 0.6377753026398107,
+        "lane_tolerant_recall": 0.6672666139240375,
+        "road_accuracy": 0.9735716443695532,
+        "road_dice": 0.8934714350493489,
+        "road_iou": 0.8074544691841695,
+        "road_precision": 0.88690171524524,
+        "road_recall": 0.9001392115378167,
+        "selection_score": 0.7298211024666577
+      },
+      "model_name": "deeplabv3_mobilenet_v3_large",
+      "seed": 2027,
+      "validation_fitted_thresholds": {
+        "lane": 0.55,
+        "road": 0.5
+      }
+    },
+    {
+      "checkpoint_sha256": "6db27c66c06820e9bd583b8709d9ab0fd0771931fc507a13c865caae1e686ae6",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9833927196095451,
+        "lane_dice": 0.3119900840104652,
+        "lane_iou": 0.18482716307242322,
+        "lane_precision": 0.21621807353109443,
+        "lane_recall": 0.560067246835432,
+        "lane_tolerant_f1": 0.6528685565105151,
+        "lane_tolerant_precision": 0.6330469972893472,
+        "lane_tolerant_recall": 0.6739715189873284,
+        "road_accuracy": 0.973671242042824,
+        "road_dice": 0.8928882293848016,
+        "road_iou": 0.8065023361540475,
+        "road_precision": 0.8945000964667158,
+        "road_recall": 0.8912821609432247,
+        "selection_score": 0.7296854463322813
+      },
+      "model_name": "deeplabv3_mobilenet_v3_large",
+      "seed": 2028,
+      "validation_fitted_thresholds": {
+        "lane": 0.55,
+        "road": 0.55
+      }
+    },
+    {
+      "checkpoint_sha256": "f0e38c11d49a3ae9fc71422095355a016fabd4a55b2020ec0126c2ad9a61bea5",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9952401886318762,
+        "lane_dice": 0.6700100485835123,
+        "lane_iou": 0.503770759974485,
+        "lane_precision": 0.6274756963030645,
+        "lane_recall": 0.7187302215189731,
+        "lane_tolerant_f1": 0.8751681159171579,
+        "lane_tolerant_precision": 0.894186106746311,
+        "lane_tolerant_recall": 0.8569422468354262,
+        "road_accuracy": 0.980982030398965,
+        "road_dice": 0.922540657759907,
+        "road_iou": 0.8562185333526346,
+        "road_precision": 0.925281843080462,
+        "road_recall": 0.9198156662119872,
+        "selection_score": 0.8656933246348963
+      },
+      "model_name": "resnet18_fourier_unet",
+      "seed": 2026,
+      "validation_fitted_thresholds": {
+        "lane": 0.7,
+        "road": 0.65
+      }
+    },
+    {
+      "checkpoint_sha256": "3ef93583c14299d3e43aeacfef3c54115b07644881f6e5e3a87c92ae7b2b7726",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9947617474724263,
+        "lane_dice": 0.6519284294234534,
+        "lane_iou": 0.4836007550731413,
+        "lane_precision": 0.5891719236604553,
+        "lane_recall": 0.7296479430379603,
+        "lane_tolerant_f1": 0.8579253430415241,
+        "lane_tolerant_precision": 0.8734328834943564,
+        "lane_tolerant_recall": 0.842958860759477,
+        "road_accuracy": 0.9805530556406589,
+        "road_dice": 0.9212017957322259,
+        "road_iou": 0.8539148397614218,
+        "road_precision": 0.9191722390855309,
+        "road_recall": 0.9232403348420872,
+        "selection_score": 0.855920091401473
+      },
+      "model_name": "resnet18_fourier_unet",
+      "seed": 2027,
+      "validation_fitted_thresholds": {
+        "lane": 0.6,
+        "road": 0.6
+      }
+    },
+    {
+      "checkpoint_sha256": "4e5ccf2a4c842571ac83d93ff5939186ac8c079cac0a600faadfa525c0b9d800",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9945648126872275,
+        "lane_dice": 0.6488367297845231,
+        "lane_iou": 0.48020601513320427,
+        "lane_precision": 0.5735615772525582,
+        "lane_recall": 0.7468552215189727,
+        "lane_tolerant_f1": 0.8622827689998005,
+        "lane_tolerant_precision": 0.8629169451363864,
+        "lane_tolerant_recall": 0.8616495253164387,
+        "road_accuracy": 0.9814824123008578,
+        "road_dice": 0.9242009659332442,
+        "road_iou": 0.8590832829060667,
+        "road_precision": 0.9316406550065942,
+        "road_recall": 0.9168791559612012,
+        "selection_score": 0.8606830259529337
+      },
+      "model_name": "resnet18_fourier_unet",
+      "seed": 2028,
+      "validation_fitted_thresholds": {
+        "lane": 0.65,
+        "road": 0.6
+      }
+    },
+    {
+      "checkpoint_sha256": "2e7c0acb942472bc1c7b68ba72dbbe01f66ba9e4f8296c87ae1a2bfd05e32e08",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9936877148863016,
+        "lane_dice": 0.6208284742080241,
+        "lane_iou": 0.45014594819996695,
+        "lane_precision": 0.5207010209823871,
+        "lane_recall": 0.7686313291139089,
+        "lane_tolerant_f1": 0.8603440871955585,
+        "lane_tolerant_precision": 0.8405150467615183,
+        "lane_tolerant_recall": 0.8811313291139067,
+        "road_accuracy": 0.9814949118753403,
+        "road_dice": 0.9247120090845691,
+        "road_iou": 0.8599668339058903,
+        "road_precision": 0.9264406816407933,
+        "road_recall": 0.9229897756739437,
+        "selection_score": 0.8601554605507244
+      },
+      "model_name": "resnet18_unet",
+      "seed": 2026,
+      "validation_fitted_thresholds": {
+        "lane": 0.6,
+        "road": 0.6
+      }
+    },
+    {
+      "checkpoint_sha256": "457bfe0b76004391fdab3e6bbf4d5eaec546c01da983c2aa927f692fdff2ea29",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9937557976749727,
+        "lane_dice": 0.6237219141639105,
+        "lane_iou": 0.4531946854221683,
+        "lane_precision": 0.5242604666199616,
+        "lane_recall": 0.7697587025316304,
+        "lane_tolerant_f1": 0.8616948340174545,
+        "lane_tolerant_precision": 0.8378414785279266,
+        "lane_tolerant_recall": 0.886946202531628,
+        "road_accuracy": 0.9812591486247275,
+        "road_dice": 0.9236050506441226,
+        "road_iou": 0.8580540545984672,
+        "road_precision": 0.927135013956828,
+        "road_recall": 0.9201018652618063,
+        "selection_score": 0.8598744443079609
+      },
+      "model_name": "resnet18_unet",
+      "seed": 2027,
+      "validation_fitted_thresholds": {
+        "lane": 0.55,
+        "road": 0.55
+      }
+    },
+    {
+      "checkpoint_sha256": "98f6a361b80a7fb5ad5a7850d2f3bb0aee8ee37dad6046682f287002e1b99e35",
+      "global_pixel_metrics": {
+        "lane_accuracy": 0.9950473760467727,
+        "lane_dice": 0.6627305738424839,
+        "lane_iou": 0.49558492916925573,
+        "lane_precision": 0.6111974077600072,
+        "lane_recall": 0.7237539556961883,
+        "lane_tolerant_f1": 0.8605213375663587,
+        "lane_tolerant_precision": 0.86145212206242,
+        "lane_tolerant_recall": 0.8595925632911223,
+        "road_accuracy": 0.9808305727890113,
+        "road_dice": 0.922172511956827,
+        "road_iou": 0.855584518104152,
+        "road_precision": 0.9219579860961171,
+        "road_recall": 0.9223871376747019,
+        "selection_score": 0.8580529278352553
+      },
+      "model_name": "resnet18_unet",
+      "seed": 2028,
+      "validation_fitted_thresholds": {
+        "lane": 0.65,
+        "road": 0.65
+      }
+    }
+  ],
+  "sample_count": 51,
+  "schema": "zod-driveformer-v4-public-segmentation-test-v1",
+  "status": "complete_single_opening_of_fresh_test_role"
+}

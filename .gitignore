@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.test_tmp*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+/build/
+/dist/
+
+# Local environment files
+.env
+.env.*
+*.log
+.local-tools/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and experiment artifacts (ZOD data must stay outside this repository)
+/data/
+/datasets/
+/outputs/
+artifacts/
+checkpoints/
+runs/
+*.ckpt
+*.onnx
+*.pt
+*.pth
+
+# In-repository ZOD SDK checkouts and download staging
+/zod/
+/zod-sdk/
+/zod-devkit/
+/zod_devkit/
+/downloads/
+
+# Editors / operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,39 @@
+{
+  "assignment_sha256": "3fb85f1887d3ae0ce979a692dc4e3debe9fa1eb0dde00cde494b4b19cda3e260",
+  "country_role_counts": {
+    "test/DE": 9,
+    "test/FR": 5,
+    "test/SE": 37,
+    "train/BE": 2,
+    "train/DE": 62,
+    "train/DK": 1,
+    "train/FR": 39,
+    "train/NL": 2,
+    "train/SE": 259,
+    "validation/DE": 13,
+    "validation/FR": 8,
+    "validation/SE": 52
+  },
+  "policy": {
+    "seed": 20260804,
+    "split_unit": "complete recording",
+    "test": "country-stratified deterministic subset of previous train",
+    "test_fraction_of_previous_train": 0.15,
+    "train": "remaining previous train plus previously observed test",
+    "validation": "preserved previous validation role"
+  },
+  "privacy": {
+    "licensed_images_or_masks_persisted": false,
+    "paths_persisted": false,
+    "raw_identifiers_persisted": false
+  },
+  "private_manifest_sha256": "200d8e888b79ec2f0f817c3da2a7d3bbae30f4c098b2d5bf174817b3e660504d",
+  "role_counts": {
+    "test": 51,
+    "train": 365,
+    "validation": 73
+  },
+  "sample_count": 489,
+  "schema": "zod-driveformer-v4-public-segmentation-data-v1",
+  "status": "complete_external_cache"
+}

@@ -1,0 +1,65 @@
+{
+  "cache_sha256": "8adb962a310dc1b7497b878214ca4c4f78e7b7a9f62eca106fe81b8c4e102345",
+  "normalizer_sha256": "ebbe930a8422412a5f68bf96fea5daabb4f8447c16e8e59642f23f04c8a31c92",
+  "privacy": {
+    "exact_tensors_external_only": true,
+    "licensed_arrays_persisted": false,
+    "raw_identifiers_persisted": false,
+    "source_paths_persisted": false
+  },
+  "roles": {
+    "train": {
+      "bytes": 6659147,
+      "ordered_membership_sha256": "18fe215c85ac8f5a2df58ff86ed10f9c7c08d2c664dac4b8d9c3ddd72c35c5cf",
+      "recording_group_count": 315,
+      "sample_count": 11208,
+      "sha256": "614d4bc0e1396409d5d9d0b47c1c7f7cb98e68e965577f0a53ecea511a51b2de",
+      "state_shape": [
+        11208,
+        21,
+        9
+      ],
+      "target_shape": [
+        11208,
+        30,
+        2
+      ]
+    },
+    "validation": {
+      "bytes": 1575327,
+      "ordered_membership_sha256": "252f2951fa4bc55f49fa9ee0f7914381f4775d639497f06bd3342330fac17ebc",
+      "recording_group_count": 73,
+      "sample_count": 2600,
+      "sha256": "3269e1f7118b0d4347b865e39480b495ef812109e8d941eaa2eaccab0da408c8",
+      "state_shape": [
+        2600,
+        21,
+        9
+      ],
+      "target_shape": [
+        2600,
+        30,
+        2
+      ]
+    }
+  },
+  "schema": "zod-driveformer-v4-public-dynamics-cache-receipt-v1",
+  "source": {
+    "manifest_sha256": "8f8bf297ca124312b474b351dfc701862b36412b60da0898ee5bfeb029936ab8",
+    "normalizer_sha256": "ebbe930a8422412a5f68bf96fea5daabb4f8447c16e8e59642f23f04c8a31c92",
+    "reference_checkpoint_sha256": "52b734b067d5228dd8ce639312c0cdf0b8c6c94f88ee62b43284244c5da268bb",
+    "split_sha256": "bb60cfc4678969353162ffca875bba8959b1964a63fd06eda394a091cca64e92"
+  },
+  "state_channels": [
+    "speed_mps",
+    "acceleration_mps2",
+    "yaw_rate_rps",
+    "steering_rad",
+    "accelerator_ratio",
+    "brake_pressed",
+    "turn_indicator_left",
+    "turn_indicator_right",
+    "delta_t"
+  ],
+  "status": "complete_external_tensor_cache"
+}

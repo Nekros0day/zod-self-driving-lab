@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a reproducible data, geometry, model, or evaluation defect
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not paste ZOD access links, raw private paths, or licensed images.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Include expected and observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Prefer a generated/synthetic fixture.
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit or code version
+    validations:
+      required: true
+  - type: textarea
+    id: provenance
+    attributes:
+      label: Environment and artifact hashes
+      description: Python/PyTorch, hardware, config hash, manifest hash, and seed if relevant.
+

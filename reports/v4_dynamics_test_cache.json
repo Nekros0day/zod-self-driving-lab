@@ -1,0 +1,48 @@
+{
+  "cache_sha256": "9e56e999a667e8430e248cdc37f5c049ecae50d905fcb23e40fdc8933b54be31",
+  "normalizer_sha256": "ebbe930a8422412a5f68bf96fea5daabb4f8447c16e8e59642f23f04c8a31c92",
+  "privacy": {
+    "exact_tensors_external_only": true,
+    "licensed_arrays_persisted": false,
+    "raw_identifiers_persisted": false,
+    "source_paths_persisted": false
+  },
+  "roles": {
+    "test": {
+      "bytes": 1519091,
+      "ordered_membership_sha256": "0a6e8682adf0675b6f749cf9735f32698fccaa901ff8a2d919629ccc2e77dbeb",
+      "recording_group_count": 72,
+      "sample_count": 2549,
+      "sha256": "980ab2482cf217f63e325db6ce68d1a400b17e98b66906d3dc8002847b814303",
+      "state_shape": [
+        2549,
+        21,
+        9
+      ],
+      "target_shape": [
+        2549,
+        30,
+        2
+      ]
+    }
+  },
+  "schema": "zod-driveformer-v4-public-dynamics-cache-receipt-v1",
+  "source": {
+    "manifest_sha256": "8f8bf297ca124312b474b351dfc701862b36412b60da0898ee5bfeb029936ab8",
+    "normalizer_sha256": "ebbe930a8422412a5f68bf96fea5daabb4f8447c16e8e59642f23f04c8a31c92",
+    "reference_checkpoint_sha256": "52b734b067d5228dd8ce639312c0cdf0b8c6c94f88ee62b43284244c5da268bb",
+    "split_sha256": "bb60cfc4678969353162ffca875bba8959b1964a63fd06eda394a091cca64e92"
+  },
+  "state_channels": [
+    "speed_mps",
+    "acceleration_mps2",
+    "yaw_rate_rps",
+    "steering_rad",
+    "accelerator_ratio",
+    "brake_pressed",
+    "turn_indicator_left",
+    "turn_indicator_right",
+    "delta_t"
+  ],
+  "status": "complete_external_tensor_cache"
+}

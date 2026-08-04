@@ -1,0 +1,45 @@
+project: zod-driveformer-v4-segmentation
+
+data:
+  external_cached_manifest_required: true
+  image_height: 288
+  image_width: 512
+  split_seed: 20260804
+  validation_policy: preserve_previous_validation
+  final_test_policy: country_stratified_subset_of_previous_train
+  final_test_fraction_of_previous_train: 0.15
+  split_unit: complete_sequence_recording
+
+models:
+  deeplabv3_mobilenet_v3_large: {}
+  resnet18_unet: {}
+  resnet18_fourier_unet:
+    spectral_modes_height: 5
+    spectral_modes_width: 8
+    spectral_blocks: 2
+
+training:
+  seeds: [2026, 2027, 2028]
+  epochs: 24
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  gradient_clip_norm: 5.0
+  early_stopping_patience: 6
+  freeze_encoder_epochs: 2
+  mixed_precision: true
+  num_workers: 4
+  road_positive_weight: 1.5
+  lane_positive_weight: 12.0
+  dice_weight: 0.0
+
+selection:
+  score: mean_road_iou_and_lane_tolerant_f1
+  threshold_grid: [0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75]
+  threshold_fit_split: validation
+  test_selection_forbidden: true
+
+evaluation:
+  lane_tolerance_pixels_at_512x288: 3
+  bootstrap_unit: complete_sequence_recording
+  confidence: 0.95

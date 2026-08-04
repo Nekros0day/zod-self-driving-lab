@@ -1,0 +1,54 @@
+project: zod-driveformer-v4-dynamics
+parent_data_config: ../data/sequences_full_core_2s_to_3s.yaml
+parent_manifest_dir: external_cli_argument_required
+
+data:
+  history_steps: 21
+  state_dim: 9
+  future_steps: 30
+  step_seconds: 0.1
+  shooting_boundaries_steps: [0, 10, 20, 30]
+  external_cache_required: true
+  preserve_parent_roles: true
+  refit_normalizer: false
+
+models:
+  neural_ode:
+    context_dim: 128
+    hidden_dim: 128
+    solver: fixed_rk4
+  hybrid_neural_ode:
+    context_dim: 128
+    hidden_dim: 128
+    solver: fixed_rk4
+    maximum_acceleration_mps2: 8.0
+    maximum_yaw_acceleration_rps2: 2.5
+  temporal_fno:
+    width: 96
+    modes: 16
+    blocks: 4
+    padding_steps: 8
+
+training:
+  seeds: [2026, 2027, 2028]
+  epochs: 40
+  batch_size: 2048
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 8
+  mixed_precision: true
+  num_workers: 0
+  shooting_weight: 1.0
+  continuity_weight: 0.25
+  full_rollout_weight: 0.5
+  velocity_continuity_scale: 0.2
+
+evaluation:
+  selection_split: validation
+  selection_metric: ade_m
+  test_selection_forbidden: true
+  bootstrap_unit: recording_id
+  bootstrap_samples: 2000
+  confidence: 0.95
+  miss_threshold_m: 2.0

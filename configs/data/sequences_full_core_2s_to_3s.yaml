@@ -1,0 +1,63 @@
+dataset:
+  name: zod_sequences
+  subset: sequences
+  version: full
+  data_root: null  # supply with --data-root or ZOD_DATA_ROOT; never commit access paths
+  manifest_version: 1
+  recording_id_min: "000000"
+  recording_id_max: "000490"  # first blurred-camera archive; 488 non-blacklisted IDs
+
+window:
+  history_seconds: 2.0
+  forecast_seconds: 3.0
+  state_hz: 10
+  target_hz: 10
+  camera_frames: 8
+  camera_alignment_tolerance_seconds: 0.10
+  state_gap_tolerance_seconds: 0.20
+  pose_alignment_tolerance_seconds: 0.06
+  stride_seconds: 0.5
+  require_complete_history: true
+  require_complete_future: true
+
+features:
+  control_max_age_seconds: 0.10
+  yaw_rate_max_age_seconds: 0.10
+  state_channels:
+    - speed_mps
+    - acceleration_mps2
+    - yaw_rate_rps
+    - steering_rad
+    - accelerator_ratio
+    - brake_pressed
+    - turn_indicator_left
+    - turn_indicator_right
+    - delta_t
+  include_missing_mask: true
+  image_size: [180, 320]
+
+target:
+  coordinate_frame: ego_at_t0
+  axes_note: >
+    ZOD ego pose after the dataset-wide pose-motion audit: local +x agrees
+    with positive longitudinal speed in every retained recording; local +y is
+    the SDK ego lateral axis. The target uses
+    inverse(T_world_ego(t0)) @ T_world_ego(t).
+
+quality:
+  pose_motion:
+    version: pose-speed-forward-consistency-v1
+    moving_speed_threshold_mps: 2.0
+    reversal_cosine_threshold: -0.5
+    action: quarantine_recording_if_any_moving_window_reverses
+  channels: [x_m, y_m]
+
+split:
+  unit: recording_id
+  seed: 2026
+  fractions:
+    train: 0.65
+    calibration: 0.05
+    validation: 0.15
+    test: 0.15
+  reserve_drives_for_shift: true

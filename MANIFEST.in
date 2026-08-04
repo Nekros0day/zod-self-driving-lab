@@ -1,0 +1,32 @@
+include CITATION.cff
+include LICENSE
+include Makefile
+include requirements-lock.txt
+include *.md
+
+recursive-include configs *.yaml
+recursive-include docs *.md
+recursive-include notebooks *.ipynb
+recursive-include reports *.json *.md *.png
+recursive-include scripts *.py
+recursive-include tests *.py
+
+prune artifacts
+prune build
+prune dist
+prune .github
+prune .mypy_cache
+prune .pytest_cache
+prune .ruff_cache
+prune .test_tmp*
+prune .venv
+prune checkpoints
+prune data
+prune datasets
+prune downloads
+prune outputs
+prune runs
+prune zod
+prune zod-devkit
+prune zod-sdk
+prune zod_devkit

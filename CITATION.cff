@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this research code, please cite it and the original ZOD paper/dataset."
+title: "ZOD Self-Driving Lab: Deep learning with the Zenseact Open Dataset"
+type: software
+version: 1.0.0
+date-released: 2026-08-04
+license: MIT
+authors:
+  - family-names: "Jenei"
+    given-names: "Christian"
+abstract: >-
+  A leakage-audited ZOD study of multiple-shooting NeuralODE and temporal FNO
+  ego-trajectory prediction, plus road and thin-lane segmentation
+  with U-Net and Fourier U-Net controls.
+keywords:
+  - autonomous-driving research
+  - trajectory prediction
+  - neural ordinary differential equations
+  - Fourier neural operator
+  - affordance segmentation
+  - U-Net
+  - Zenseact Open Dataset
+references:
+  - type: article
+    title: "Zenseact Open Dataset: A Large-Scale and Diverse Multimodal Dataset for Autonomous Driving"
+    url: "https://openaccess.thecvf.com/content/ICCV2023/html/Alibeigi_Zenseact_Open_Dataset_A_Large-Scale_and_Diverse_Multimodal_Dataset_for_ICCV_2023_paper.html"
