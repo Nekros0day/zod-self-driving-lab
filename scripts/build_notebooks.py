@@ -22,12 +22,14 @@ def code(text: str) -> Any:
 SETUP = """
 from pathlib import Path
 import json
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 
 ROOT = Path.cwd()
+sys.path.insert(0, str(ROOT / "src"))
 plt.style.use("seaborn-v0_8-whitegrid")
 summary = json.loads((ROOT / "reports" / "benchmark_summary.json").read_text())
 """
@@ -38,8 +40,8 @@ def notebook(title: str, cells: list[Any]) -> Any:
         cells=[
             md(
                 f"# {title}\n\n"
-                "*I built this learning notebook from synthetic examples and committed aggregate "
-                "results so that licensed ZOD samples remain outside Git.*"
+                "*The full dataset remains outside Git. These notebooks combine synthetic worked "
+                "examples, aggregate evidence, and small attributed qualitative panels.*"
             ),
             *cells,
         ]
@@ -128,6 +130,24 @@ seg = summary["segmentation"]
 print(f"Dynamics test: {dyn['sample_count']:,} windows / {dyn['recording_group_count']} recordings")
 print(f"Segmentation test: {seg['sample_count']} keyframes / {seg['recording_group_count']} recordings")
 print("Public evidence status:", summary["status"])
+"""
+            ),
+            md(
+                """
+## What the frozen models actually produce
+
+The first panel projects trajectory cases onto their calibrated front-camera
+frames. Learned curves average the three frozen seeds, while the camera remains
+context rather than model input. The second panel fixes seed 2026 and places
+segmentation targets beside all three model outputs. Together they connect the
+tensor contracts above to outputs I can inspect.
+"""
+            ),
+            md(
+                """
+![Held-out camera trajectories](../reports/figures/dynamics_camera_predictions.png)
+
+![Held-out segmentation outputs](../reports/figures/segmentation_model_comparison.png)
 """
             ),
             md(
@@ -742,6 +762,21 @@ display(Image(filename=str(ROOT/'reports/figures/dynamics_accuracy_latency.png')
             ),
             md(
                 """
+## From a scalar metric back to a path
+
+ADE compresses thirty two-dimensional errors into one number. Projecting the
+paths through the calibrated fisheye camera restores the scene geometry: I can
+see where models agree early and how endpoint or turn error accumulates. This is
+diagnostic context only; every forecasting network remains state-only.
+"""
+            ),
+            md(
+                """
+![Camera-projected trajectories](../reports/figures/dynamics_camera_predictions.png)
+"""
+            ),
+            md(
+                """
 ## Interpretation
 
 NeuralODE and hybrid ODE reliably beat B2, supporting the continuous-dynamics
@@ -964,6 +999,24 @@ ax.scatter(frame.latency_ms,frame.ADE_m,s=80+100*frame.parameters_M)
 for row in frame.itertuples(): ax.annotate(row.model,(row.latency_ms,row.ADE_m),xytext=(4,4),textcoords='offset points')
 ax.set_xscale('log'); ax.set_xlabel('batch-1 GPU latency (ms, log scale)'); ax.set_ylabel('test ADE (m)')
 ax.set_title('Accuracy–latency–size trade-off (marker area follows parameters)'); plt.tight_layout(); plt.show()
+"""
+            ),
+            md(
+                """
+## Inspecting operator output in trajectory space
+
+The red FNO curve below is not a frequency-domain diagnostic: it is the decoded
+physical output in anchor-local metres, projected only for display. Comparing it
+with ODE paths and ground truth checks that similar ADE is not hiding a different
+failure mode. The learned curves average all three frozen seeds; the benchmark
+itself averages per-seed metrics rather than scoring this visual ensemble.
+"""
+            ),
+            md(
+                """
+![Camera-projected trajectory montage](../reports/figures/dynamics_camera_predictions.png)
+
+![Animated held-out trajectory cases](../reports/figures/dynamics_camera_predictions.gif)
 """
             ),
             md(
@@ -1217,6 +1270,24 @@ from IPython.display import Image, display
 display(Image(filename=str(ROOT/'reports/figures/segmentation_test_metrics.png')))
 """
             ),
+            md(
+                """
+## Reading the predicted masks
+
+Cyan is the thresholded road channel and magenta is the thresholded lane
+channel. Lane pixels can lie inside road pixels, so the overlay deliberately
+shows overlap rather than forcing a mutually exclusive class map. Fixed score
+quantiles plus disagreement cases avoid selecting only attractive examples.
+All columns use the frozen seed-2026 checkpoints.
+"""
+            ),
+            md(
+                """
+![Segmentation model montage](../reports/figures/segmentation_model_comparison.png)
+
+![Animated held-out segmentation cases](../reports/figures/segmentation_model_comparison.gif)
+"""
+            ),
             code(
                 """
 pair = summary["fourier_unet_minus_unet_per_image"]["delta_selection_score"]
@@ -1467,6 +1538,24 @@ scorecard = pd.DataFrame([
     ["Fourier U-Net", False, False, "retain as complexity control"],
 ], columns=["model","reliable_gain","efficient_frontier","decision"])
 scorecard
+"""
+            ),
+            md(
+                """
+## Visual recall: architecture to output
+
+These panels are the fastest way to rehearse the project aloud: name the input
+tensor, explain the model's inductive bias, point to its physical output, then
+connect the visible behavior back to the sealed quantitative result.
+"""
+            ),
+            md(
+                """
+![Model architecture overview](../reports/figures/model_architecture_overview.png)
+
+![Camera-projected trajectory outputs](../reports/figures/dynamics_camera_predictions.png)
+
+![Segmentation outputs](../reports/figures/segmentation_model_comparison.png)
 """
             ),
             code(

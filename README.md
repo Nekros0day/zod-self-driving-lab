@@ -15,7 +15,10 @@ The answer to both is yes. A temporal Fourier Neural Operator (FNO) reduces
 test ADE from **0.673 m to 0.542 m**, and a ResNet-18 U-Net raises the camera
 segmentation score from **0.731 to 0.859**. Every learned result uses three
 seeds, recording-level splits, validation-only selection, and grouped bootstrap
-intervals. Raw ZOD data, masks, checkpoints, and per-sample rows stay external.
+intervals. Full-resolution ZOD data, cached masks, checkpoints, and per-sample
+rows stay external; the attributed qualitative panels below are derived figures.
+
+![Model input, architecture, and output overview](reports/figures/model_architecture_overview.png)
 
 ![Trajectory benchmark](reports/figures/dynamics_test_ade.png)
 
@@ -38,6 +41,15 @@ does not beat the generic ODE; hand-specified kinematics stabilize the model,
 yet they also restrict the learned vector field. FNO provides essentially the
 same accuracy as NeuralODE at about one ninth of its latency.
 
+![Held-out camera trajectories](reports/figures/dynamics_camera_predictions.gif)
+
+The animation projects ground truth, CTRV, and the three learned paths through
+the calibrated front camera. It is a qualitative interpretation layer: the
+trajectory networks receive only the causal 21-step vehicle-state history, not
+the camera image. Each learned curve is the mean of three frozen-seed paths. A
+four-scene comparison is available as a
+[full-resolution static figure](reports/figures/dynamics_camera_predictions.png).
+
 ### Road and lane segmentation
 
 | Model | Road IoU ↑ | Strict lane IoU ↑ | Lane tolerant F1 ↑ | Score ↑ | Params | Latency |
@@ -52,6 +64,15 @@ Both U-Nets improve the per-image score over DeepLab by about **+0.136**, with
 U-Net: the Fourier bottleneck is an informative control, not an efficiency win.
 
 ![Segmentation benchmark](reports/figures/segmentation_test_metrics.png)
+
+![Held-out road and lane segmentation](reports/figures/segmentation_model_comparison.gif)
+
+Each animation frame keeps the RGB input and ground truth beside all three
+frozen model outputs. Cyan marks road and magenta marks lane. The fixed sample
+rules include score quantiles and model-disagreement cases rather than only
+attractive scenes; predictions use seed 2026 and validation-fitted thresholds.
+The first three scenes are also available as a
+[full-resolution static montage](reports/figures/segmentation_model_comparison.png).
 
 ## What is unusual about the project
 
@@ -134,5 +155,16 @@ recordings; it measures road/lane masks, not instance or panoptic perception.
 The statistically reliable findings are the gains over B2 and DeepLab—not the
 tiny differences between FNO and NeuralODE or between the two U-Nets.
 
-ZOD is provided by Zenseact. Dataset terms and attribution remain governed by
-the official ZOD license and documentation.
+## ZOD attribution
+
+ZOD is © 2022 Zenseact AB and is licensed under
+[CC BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Dataset terms and
+attribution remain governed by the [official ZOD license](https://zod.zenseact.com/license/).
+
+> For this dataset, Zenseact AB has taken all reasonable measures to remove all
+> personally identifiable information, including faces and license plates. To
+> the extent that you like to request removal of specific images from the
+> dataset, please contact privacy@zenseact.com.
+
+The displayed derivatives and their terms are listed in the complete
+[visual-asset notice](reports/figures/ZOD_ASSET_NOTICE.md).
