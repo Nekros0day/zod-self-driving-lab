@@ -390,7 +390,7 @@ def _overlay(image: np.ndarray, mask: np.ndarray) -> np.ndarray:
     lane = mask[1] > 0.5
     result[road] = 0.58 * result[road] + 0.42 * np.array([0.00, 0.85, 0.82])
     result[lane] = 0.22 * result[lane] + 0.78 * np.array([1.00, 0.18, 0.58])
-    return np.clip(result, 0, 1)
+    return cast(np.ndarray, np.clip(result, 0, 1))
 
 
 def _array_image(values: np.ndarray, size: tuple[int, int]) -> Image.Image:
