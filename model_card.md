@@ -2,9 +2,10 @@
 
 ## Intended use
 
-I use this repository as an educational offline benchmark for causal ego-trajectory
-forecasting and road/lane segmentation. It is not a driving policy,
-safety monitor, or production perception stack.
+I use this repository as an educational offline laboratory for causal
+ego-trajectory forecasting, road/lane segmentation, and LiDAR bird's-eye-view
+perception. It is not a driving policy, safety monitor, or production
+perception stack.
 
 ## Promoted models
 
@@ -37,6 +38,12 @@ safety monitor, or production perception stack.
 - Hybrid NeuralODE preserves planar kinematics and tests physical inductive bias.
 - Fourier U-Net tests global spectral mixing, but its score difference from
   U-Net is compatible with zero and its cost is substantially higher.
+- External SFA3D FPN-ResNet-18 is retained as a pinned KITTI→ZOD transfer
+  baseline. On 12 ZOD mini frames it reaches 0.655 vehicle F1 and 0.293 m
+  matched-center error, but zero pedestrian and cyclist recall. It is not a
+  promoted ZOD detector.
+- The constant-velocity Kalman tracker is a transparent qualitative sequence
+  component; no frame-by-frame MOT ground truth is available for that demo.
 
 ## Evaluation
 
@@ -51,3 +58,6 @@ complete recordings after averaging aligned per-sample metrics over seeds.
 - Thin-lane tolerance can hide small offsets, so strict IoU is also mandatory.
 - Aggregate performance does not guarantee rare-condition or geographic safety.
 - The benchmark hardware latency is not an embedded deployment measurement.
+- The BEV transfer sample is tiny and the checkpoint is not trained on ZOD.
+- The BEV pipeline does not establish pedestrian/cyclist detection or tracking
+  safety; its observed vulnerable-road-user recall is zero.

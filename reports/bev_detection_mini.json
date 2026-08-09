@@ -1,0 +1,110 @@
+{
+  "dataset": {
+    "frame_count": 12,
+    "mean_lidar_points": 260092.5,
+    "name": "ZOD Frames mini",
+    "target_count": 104
+  },
+  "evaluation": {
+    "all": {
+      "f1": 0.5033112582781457,
+      "false_negatives": 66,
+      "false_positives": 9,
+      "mean_center_error_m": 0.2934926391163448,
+      "mean_matched_iou": 0.7183024407873114,
+      "precision": 0.8085106382978723,
+      "recall": 0.36538461538461536,
+      "true_positives": 38
+    },
+    "by_class": {
+      "Cyclist": {
+        "f1": 0.0,
+        "false_negatives": 17,
+        "false_positives": 1,
+        "mean_center_error_m": 0.0,
+        "mean_matched_iou": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "true_positives": 0
+      },
+      "Pedestrian": {
+        "f1": 0.0,
+        "false_negatives": 15,
+        "false_positives": 2,
+        "mean_center_error_m": 0.0,
+        "mean_matched_iou": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "true_positives": 0
+      },
+      "Vehicle": {
+        "f1": 0.6551724137931034,
+        "false_negatives": 34,
+        "false_positives": 6,
+        "mean_center_error_m": 0.2934926391163448,
+        "mean_matched_iou": 0.7183024407873114,
+        "precision": 0.8636363636363636,
+        "recall": 0.5277777777777778,
+        "true_positives": 38
+      }
+    },
+    "match": "class-consistent one-to-one oriented BEV IoU >= 0.5",
+    "scope": "all dynamic 3D boxes whose centers fall inside the front BEV"
+  },
+  "input": {
+    "channels": [
+      "robust_intensity",
+      "top_height",
+      "log_density"
+    ],
+    "frame": "ZOD ego: x-forward, y-left, z-up",
+    "range_m": {
+      "x": [
+        0.0,
+        50.0
+      ],
+      "y": [
+        -25.0,
+        25.0
+      ],
+      "z": [
+        -1.0,
+        3.0
+      ]
+    },
+    "raster": [
+      3,
+      608,
+      608
+    ]
+  },
+  "latency": {
+    "bev_cpu_median_ms": 22.148550022393465,
+    "detector_gpu_median_ms": 5.695750005543232,
+    "detector_gpu_p95_ms": 6.113374978303909
+  },
+  "limitations": [
+    "The 12-frame mini subset is a smoke/domain-transfer benchmark, not a large test set.",
+    "SFA3D was trained on KITTI and receives no ZOD labels or fine-tuning.",
+    "Metrics evaluate oriented ground-plane footprints; vertical box accuracy is not claimed."
+  ],
+  "model": {
+    "checkpoint_sha256": "d20d2576b51ec3b069bb57c9203df7cb637c241f5751af8a9fd15916425acabc",
+    "confidence_threshold": 0.2,
+    "external_source_commit": "0e2f0b63dc4090bd6c08e15505f11d764390087c",
+    "external_source_license": "MIT",
+    "name": "SFA3D FPN-ResNet-18",
+    "parameter_count": 12728353,
+    "source_commit_verified": true,
+    "timing_warmup_iterations": 10,
+    "top_k": 50,
+    "training_domain": "KITTI (external pretrained checkpoint; no ZOD fine-tuning)"
+  },
+  "privacy": {
+    "licensed_sensor_data_persisted": false,
+    "per_frame_predictions_persisted": false,
+    "raw_ids_persisted": false
+  },
+  "schema": "zod-self-driving-lab-bev-transfer-v1",
+  "status": "complete_fixed_cross_dataset_transfer_diagnostic"
+}

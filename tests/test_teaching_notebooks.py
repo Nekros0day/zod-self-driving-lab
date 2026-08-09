@@ -14,7 +14,8 @@ EXPECTED_CONCEPTS = {
     "02_neural_ode_and_multiple_shooting.ipynb": ("RK4", "multiple shooting", "hybrid"),
     "03_fourier_operators.ipynb": ("Fourier transform", "causality", "CTRV"),
     "04_road_lane_segmentation.ipynb": ("multilabel", "U-Net", "tolerant"),
-    "05_interview_capstone.ipynb": ("bootstrap", "failure", "promotion"),
+    "05_lidar_bev_detection_and_tracking.ipynb": ("bird's-eye", "oriented", "Kalman"),
+    "06_interview_capstone.ipynb": ("bootstrap", "failure", "promotion"),
 }
 
 

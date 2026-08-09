@@ -47,8 +47,25 @@ checkpoint changed after that correction.
 - Test uncertainty: average each per-image metric over seeds, then bootstrap
   complete recordings 2,000 times.
 
+## LiDAR BEV transfer diagnostic
+
+- Input: one scanwise motion-compensated LiDAR keyframe in the calibrated ZOD
+  ego frame, rasterized to intensity, top-height, and log-density channels.
+- Spatial support: 0–50 m forward, ±25 m lateral, and −1–3 m vertical at
+  608×608 resolution.
+- Model: external SFA3D FPN-ResNet-18 source pinned at commit
+  `0e2f0b63dc4090bd6c08e15505f11d764390087c` with a hashed KITTI checkpoint.
+- Dataset: all 12 annotated ZOD Frames mini keyframes; no ZOD fine-tuning.
+- Decoder: confidence 0.20, top-K 50, mapped to Vehicle, Pedestrian, Cyclist.
+- Metric: class-consistent one-to-one oriented BEV IoU ≥ 0.50, plus center
+  error for matches.
+- Status: fixed smoke/domain-transfer diagnostic, not a powered model benchmark.
+- Sequence tracking: constant-velocity Kalman filter shown qualitatively only;
+  the sequence lacks frame-by-frame object ground truth for a MOT metric.
+
 ## Publication boundary
 
-Raw ZOD assets, masks, manifests with identifiers, tensor caches, checkpoints,
-and per-sample metrics stay outside the repository. Public reports contain only
-aggregate counts, hashes, metrics, intervals, and environment information.
+Raw ZOD assets, masks, point clouds, manifests with identifiers, tensor caches,
+checkpoints, and per-sample metrics stay outside the repository. Public reports
+contain only aggregate counts, hashes, metrics, intervals, environment
+information, and attributed qualitative derivatives.

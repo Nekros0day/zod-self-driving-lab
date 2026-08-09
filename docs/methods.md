@@ -118,7 +118,58 @@ dilates predictions before matching the target. Their harmonic mean measures
 whether the predicted line lies within three pixels without allowing unlimited
 thickness.
 
-## 7. Statistical unit
+## 7. LiDAR-to-BEV representation
+
+ZOD LiDAR returns are motion-compensated to the keyframe time and transformed
+into the ego frame with the calibrated homogeneous extrinsic. The project uses
+(x) forward, (y) left, and (z) up. Points inside a 50 m × 50 m front crop
+are quantized to a 608 × 608 raster. In each cell, the highest return supplies
+top height and robustly scaled intensity. If a cell contains (n) returns, its
+density is
+
+\[
+d=\min\left(1,\frac{\log(1+n)}{\log 64}\right).
+\]
+
+The three detector channels are intensity, height, and density. This is a lossy
+projection: it preserves metric ground-plane structure but discards most
+within-cell vertical detail.
+
+## 8. Center-based oriented detection
+
+The external SFA3D FPN-ResNet-18 checkpoint predicts a three-class center
+heatmap plus sub-cell offset, direction, vertical center, and dimensions. The
+adapter decodes peaks and maps pixel locations and sizes back into metres in the
+ZOD ego frame. No SFA3D code or weights are vendored, and the fixed transfer
+benchmark performs no ZOD fitting or threshold calibration.
+
+An oriented footprint is formed by rotating local length/width corners by yaw.
+Intersection is computed by convex polygon clipping, followed by
+
+\[
+IoU_{BEV}=\frac{|P\cap G|}{|P|+|G|-|P\cap G|}.
+\]
+
+Evaluation greedily chooses the highest-IoU class-consistent one-to-one matches
+at (IoU\ge0.5).
+
+## 9. Constant-velocity Kalman tracking
+
+Each track has state ([x,y,v_x,v_y]^\top). With elapsed time (Delta t),
+
+\[
+F=\begin{bmatrix}
+1&0&\Delta t&0\\0&1&0&\Delta t\\0&0&1&0\\0&0&0&1
+\end{bmatrix},\quad
+s^- = Fs,\quad P^-=FPF^\top+Q.
+\]
+
+Position observations use the standard Kalman gain
+(K=P^-H^\top(HP^-H^\top+R)^{-1}). Association is class-aware greedy nearest
+neighbor under a metric gate. This deliberately small tracker makes the state
+transition and uncertainty update inspectable; it is not a learned MOT model.
+
+## 10. Statistical unit
 
 Overlapping trajectory windows from one recording are correlated. Resampling
 individual windows would overstate certainty. Metrics are first averaged over
@@ -129,4 +180,6 @@ test images are also the 51 bootstrap groups.
 Primary references: the original [Neural ODE paper](https://papers.neurips.cc/paper_files/paper/2018/hash/69386f6bb1dfed68692a24c8686939b9-Abstract.html),
 [Differentiable Multiple Shooting Layers](https://proceedings.neurips.cc/paper/2021/file/89b9c689a57b82e59074c6ba09aa394d-Paper.pdf),
 [Fourier Neural Operator](https://arxiv.org/abs/2010.08895), and
-[U-Net](https://arxiv.org/abs/1505.04597).
+[U-Net](https://arxiv.org/abs/1505.04597). BEV detection follows the external
+[SFA3D implementation](https://github.com/maudzung/SFA3D), pinned by commit in
+the public transfer report.

@@ -18,3 +18,4 @@ ipykernel==7.2.0
 
 zod==0.8.0
 dataclass-wizard==0.39.1
+opencv-python==5.0.0.93

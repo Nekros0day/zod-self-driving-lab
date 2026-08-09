@@ -2,10 +2,11 @@
 
 ## Sources
 
-This project uses the authorized Zenseact Open Dataset (ZOD) Sequences release
-and official road/lane annotations. No raw or derived licensed sample is stored
-in the repository. Dataset access, attribution, privacy, and redistribution are
-governed by Zenseact's terms.
+This project uses the authorized Zenseact Open Dataset (ZOD) Sequences and
+Frames releases, including official road/lane and 3-D object annotations. No raw
+licensed sample is stored in the repository. Attributed qualitative derivatives
+are listed in the visual-asset notice. Dataset access, attribution, privacy, and
+redistribution are governed by Zenseact's terms.
 
 ## Dynamics samples
 
@@ -39,6 +40,17 @@ The split was redesigned because metrics on the previous test role had already
 been observed. Test selection uses seeded SHA-256 ranking within country; strata
 with fewer than three examples remain in train.
 
+## BEV transfer samples
+
+The transfer diagnostic uses all 12 annotated keyframes in ZOD Frames mini. One
+sample contains a motion-compensated LiDAR sweep, calibration, and eligible
+dynamic 3-D boxes. There are 104 non-unclear in-range targets after mapping
+Vehicle, Pedestrian, and VulnerableVehicle to the three detector classes. No
+training or model selection is performed on these frames.
+
+A separate 20-second ZOD sequence supplies only the qualitative tracker GIF. It
+is not used to compute detection or MOT metrics.
+
 ## Public/private boundary
 
 Public cache receipts contain counts, shapes, hashes, and byte totals. External
@@ -52,3 +64,5 @@ never serialized into public reports.
 - Segmentation has only 51 final test keyframes and sparse rare-country coverage.
 - No closed-loop control or interaction with other road users is evaluated.
 - Country, weather, and collection-car shifts are not separately powered.
+- The 12-frame BEV diagnostic is too small for general detector conclusions;
+  its fixed KITTI checkpoint has zero vulnerable-road-user true positives.
