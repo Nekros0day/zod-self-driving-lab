@@ -10,23 +10,25 @@ with the Zenseact Open Dataset (ZOD). I focus on three questions:
    ego motion better than a strong state MLP?
 2. Can an efficient encoder–decoder segment the road surface and thin lane
    markings from a front-camera keyframe?
-3. Can calibrated LiDAR produce a useful top-down object view and temporal
-   tracks when a pretrained 3-D detector is transferred to ZOD?
+3. Can ZOD fine-tuning and calibrated camera–LiDAR fusion produce a useful
+   top-down detector for vehicles and vulnerable road users?
 
-The first two studies have sealed three-seed tests: a temporal Fourier Neural
-Operator (FNO) reduces trajectory ADE from **0.673 m to 0.542 m**, and a
-ResNet-18 U-Net raises camera-segmentation score from **0.731 to 0.859**. The
-third is deliberately a transfer diagnostic: a frozen KITTI SFA3D checkpoint
-localizes matched ZOD vehicles to **0.293 m** mean center error, but misses every
-annotated pedestrian and cyclist in the 12-frame mini subset. That negative
-result prevents the polished visualization from being mistaken for a safe
-perception system.
+The trajectory and segmentation studies have sealed three-seed tests: a
+temporal Fourier Neural Operator (FNO) reduces trajectory ADE from **0.673 m to
+0.542 m**, and a ResNet-18 U-Net raises camera-segmentation score from **0.731
+to 0.859**. The BEV study starts from a failed 12-frame KITTI→ZOD transfer, then
+uses protected recording splits to fine-tune SFA3D and add camera semantics.
+The final hybrid reaches AP@0.30 of **0.616 vehicle, 0.530 pedestrian, and 0.328
+cyclist**, while a vehicle pass-through rule prevents camera fusion from
+degrading the LiDAR vehicle branch.
 
 ![Model input, architecture, and output overview](reports/figures/model_architecture_overview.png)
 
 ![Trajectory benchmark](reports/figures/dynamics_test_ade.png)
 
-![Camera, calibrated LiDAR BEV, labels, and predictions](reports/figures/bev_detection_mini.png)
+![Camera, LiDAR-only BEV, fused BEV, and labels](reports/figures/bev_v2_fusion_comparison.png)
+
+![ZOD camera–LiDAR fusion comparison](reports/figures/bev_v2_fusion_comparison.gif)
 
 ## Headline results
 
@@ -82,28 +84,40 @@ The first three scenes are also available as a
 
 ### LiDAR BEV object detection and tracking
 
-![LiDAR BEV perception architecture](reports/figures/bev_pipeline.png)
+![Promoted BEV perception architecture](reports/figures/bev_v2_pipeline.png)
 
-| Fixed KITTI→ZOD mini transfer | Precision | Recall | F1 | Matched IoU | Center error |
-|---|---:|---:|---:|---:|---:|
-| All dynamic classes | 0.809 | 0.365 | 0.503 | 0.718 | 0.293 m |
-| Vehicle | **0.864** | **0.528** | **0.655** | **0.718** | **0.293 m** |
-| Pedestrian | 0.000 | 0.000 | 0.000 | — | — |
-| Cyclist | 0.000 | 0.000 | 0.000 | — | — |
+| Sealed AP at oriented IoU ≥ 0.30 | Vehicle | Pedestrian | Cyclist |
+|---|---:|---:|---:|
+| Unmodified KITTI SFA3D | 0.361 | 0.366 | 0.007 |
+| ZOD fine-tuned SFA3D, one sweep | **0.616** | 0.501 | 0.156 |
+| **Hybrid camera–LiDAR fusion** | **0.616** | **0.530** | **0.328** |
+| PointPillars, trained from scratch | 0.018 | 0.000 | 0.000 |
+| CenterPoint head, trained from scratch | 0.000 | 0.000 | 0.000 |
 
-The pipeline motion-compensates each keyframe LiDAR sweep, applies the calibrated
-LiDAR-to-ego transform, rasterizes robust intensity/top-height/log-density at
-608×608, decodes oriented SFA3D boxes, and associates sequence detections with a
-constant-velocity Kalman filter. The benchmark covers 104 in-range annotations
-across all 12 ZOD Frames mini scenes. It uses one frozen 0.20 threshold, no ZOD
-fine-tuning, and class-consistent one-to-one matching at oriented BEV IoU ≥ 0.5.
+The protected cohort contains 70 training, 16 validation, and 30 sealed test
+ZOD Sequence recordings. Every recording contributes only its annotated central
+keyframe; all mini recordings are excluded. SFA3D is initialized from the
+pinned KITTI checkpoint, first trains only its heads, then progressively
+unfreezes the feature pyramid and backbone. Class-balanced sampling counters the
+much lower pedestrian and cyclist frequency.
 
-![Tracked LiDAR BEV sequence](reports/figures/bev_tracking.gif)
+![BEV detector and fusion AP](reports/figures/bev_v2_test_ap.png)
 
-The animation is a qualitative 20-second sequence visualization, not a tracking
-metric: the sequence does not provide frame-by-frame 3-D labels. Track IDs and
-velocity arrows show temporal state estimation; the detector receives LiDAR,
-not the accompanying camera image.
+The promoted detector uses one current LiDAR sweep. A five-sweep detector input
+looked attractive but reduced validation macro-F1 because ego compensation
+cannot remove trails from independently moving objects. Five compensated sweeps
+are instead used only to estimate metric depth for camera detections. Unmatched
+camera pedestrians and cyclists may supplement LiDAR; vehicle boxes and scores
+remain a strict LiDAR pass-through.
+
+![Confidence-ranked BEV precision–recall curves](reports/figures/bev_v2_pr_curves.png)
+
+Evaluation includes 101-point AP at IoU 0.30/0.50/0.70, precision–recall curves,
+confidence calibration, center/yaw/size error, and near/mid/far range slices.
+PointPillars and CenterPoint are retained only as small-data controls: training
+from scratch on 70 recordings overfits and is not competitive with transfer
+learning. The earlier 12-frame mini transfer remains a historical smoke test,
+not the headline result.
 
 ## What is unusual about the project
 
@@ -125,9 +139,9 @@ not the accompanying camera image.
 - **Negative complexity results remain visible.** Fourier U-Net is larger and
   slower without a reliable aggregate gain. The repository keeps that finding,
   but does not keep the old implementation sprawl that led nowhere.
-- **Cross-domain failure is measured, not hidden.** The BEV detector transfers
-  usefully for some vehicles but fails on vulnerable road users. This defines a
-  concrete ZOD-native training or camera–LiDAR fusion experiment.
+- **Cross-domain failure drives the next experiment.** The frozen mini transfer
+  misses every vulnerable road user; protected ZOD fine-tuning and class-gated
+  camera fusion turn that failure into measurable pedestrian/cyclist AP.
 - **Metric geometry stays explicit.** ZOD sensor calibration, ego-frame axes,
   oriented polygon IoU, Kalman state transitions, and every raster convention
   are implemented and tested rather than buried inside a visualization.
@@ -143,7 +157,7 @@ The executed notebooks are the main teaching surface:
 | `02_neural_ode_and_multiple_shooting.ipynb` | ODE states, RK4, multiple shooting, and hybrid physics |
 | `03_fourier_operators.ipynb` | Spectral convolution, temporal FNO, and accuracy–latency trade-offs |
 | `04_road_lane_segmentation.ipynb` | U-Net skips, Fourier bottlenecks, class imbalance, thin-lane metrics |
-| `05_lidar_bev_detection_and_tracking.ipynb` | SE(3), BEV layers, SFA3D heads, oriented IoU, and Kalman tracking |
+| `05_lidar_bev_detection_and_tracking.ipynb` | SE(3), temporal sweeps, SFA3D transfer learning, pillars, fusion, AP/calibration, and tracking |
 | `06_interview_capstone.ipynb` | Defensible claims, failure analysis, and interview questions |
 
 The mathematical reference is [methods.md](docs/methods.md), the exact data and
@@ -180,18 +194,28 @@ redistributes raw data. The benchmark pipeline is intentionally explicit:
 # Segmentation has analogous build/train/evaluate scripts.
 ```
 
-The BEV transfer study additionally uses the official MIT-licensed SFA3D source
-and checkpoint outside this repository. Pinning the recorded commit avoids
-silently changing the model:
+The BEV study additionally uses the official MIT-licensed SFA3D source and
+checkpoint outside this repository. Pinning the recorded commit avoids silently
+changing the starting model:
 
 ```powershell
 git clone https://github.com/maudzung/SFA3D.git D:\datasets\zod-sfa3d
 git -C D:\datasets\zod-sfa3d checkout 0e2f0b63dc4090bd6c08e15505f11d764390087c
 
-.venv\Scripts\python scripts\evaluate_bev_detection.py `
-  --zod-root D:\datasets\zod-frames-mini `
+.venv\Scripts\python scripts\cache_bev_training_data.py `
+  --zod-root D:\datasets\zod `
+  --subset sequences `
+  --zod-version full `
+  --private-roles D:\private\zod-bev-roles.json `
+  --output-dir D:\datasets\zod-bev-cache `
+  --sweeps 1
+
+.venv\Scripts\python scripts\train_bev_detectors.py `
+  --model sfa3d `
+  --cache-root D:\datasets\zod-bev-cache `
+  --output-dir D:\private\zod-bev-models `
   --sfa3d-root D:\datasets\zod-sfa3d `
-  --checkpoint D:\datasets\zod-sfa3d\checkpoints\fpn_resnet_18\fpn_resnet_18_epoch_300.pth `
+  --sfa3d-checkpoint D:\datasets\zod-sfa3d\checkpoints\fpn_resnet_18\fpn_resnet_18_epoch_300.pth `
   --device cuda
 ```
 
@@ -205,10 +229,11 @@ This is an offline trajectory, segmentation, and perception laboratory—not an
 end-to-end driving policy. It does not perform navigation, collision-aware path
 planning, behavior prediction, or closed-loop control. The trajectory model uses
 vehicle state rather than camera or BEV features. Segmentation has only 489
-labeled keyframes and 51 final test recordings. The 12-frame BEV result is a
-small fixed domain-transfer diagnostic, not a ZOD-trained detector benchmark.
-The statistically reliable findings are the gains over B2 and DeepLab—not the
-tiny differences between FNO and NeuralODE or between the two U-Nets.
+labeled keyframes and 51 final test recordings. The BEV cohort is larger than
+the original mini diagnostic but still only 116 locally complete annotated
+Sequence recordings; a full-Frames confirmation remains future work. The
+statistically reliable findings are the gains over B2 and DeepLab—not the tiny
+differences between FNO and NeuralODE or between the two U-Nets.
 
 ## ZOD attribution
 

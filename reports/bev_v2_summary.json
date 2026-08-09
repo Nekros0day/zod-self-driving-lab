@@ -1,0 +1,848 @@
+{
+  "dataset": {
+    "limitation": "Only 120 locally available recordings contained both LiDAR and front images; Frames-full confirmation remains pending upstream access.",
+    "mini_recordings_excluded": 2,
+    "recording_disjoint": true,
+    "roles": {
+      "test": {
+        "cyclist_instances": 18,
+        "frames_with_cyclist": 5,
+        "frames_with_pedestrian": 6,
+        "frames_with_vehicle": 30,
+        "id_set_sha256": "b11f2b2df3381fd4c8b0bc4c896078262a69d532cae795b5d0aff867663fe362",
+        "pedestrian_instances": 31,
+        "recordings": 30,
+        "vehicle_instances": 351
+      },
+      "train": {
+        "cyclist_instances": 28,
+        "frames_with_cyclist": 10,
+        "frames_with_pedestrian": 17,
+        "frames_with_vehicle": 69,
+        "id_set_sha256": "95a6a08188ba44cab63764605a1b871594e63c3358805edd1919253d86c57970",
+        "pedestrian_instances": 50,
+        "recordings": 70,
+        "vehicle_instances": 852
+      },
+      "validation": {
+        "cyclist_instances": 24,
+        "frames_with_cyclist": 8,
+        "frames_with_pedestrian": 11,
+        "frames_with_vehicle": 16,
+        "id_set_sha256": "84a73a1d0c4713d8633f03a01f0d1b990cef244eca7dedacfc3b60b903df6116",
+        "pedestrian_instances": 53,
+        "recordings": 16,
+        "vehicle_instances": 220
+      }
+    },
+    "subset": "ZOD Sequences annotated keyframes"
+  },
+  "models": {
+    "camera_lifted": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.17425742574257427,
+          "center_error_m": 0.347752984431993,
+          "f1": 0.13333333333333336,
+          "length_error_m": 0.1419999999999999,
+          "precision": 0.5,
+          "recall": 0.07692307692307693,
+          "width_error_m": 0.09099999999999997,
+          "yaw_error_deg": 148.5093765402332
+        },
+        "iou_0.50": {
+          "ap": 0.015841584158415842,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.015841584158415842,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.48945835760046597,
+          "center_error_m": 0.17185800822309966,
+          "f1": 0.6206896551724139,
+          "length_error_m": 0.07688888888888895,
+          "precision": 0.5294117647058824,
+          "recall": 0.75,
+          "width_error_m": 0.025777777777777774,
+          "yaw_error_deg": 104.7981186785526
+        },
+        "iou_0.50": {
+          "ap": 0.28899242865463015,
+          "center_error_m": 0.14294065491354324,
+          "f1": 0.4827586206896552,
+          "length_error_m": 0.08371428571428577,
+          "precision": 0.4117647058823529,
+          "recall": 0.5833333333333334,
+          "width_error_m": 0.026428571428571437,
+          "yaw_error_deg": 121.28748643026266
+        },
+        "iou_0.70": {
+          "ap": 0.0052417006406523,
+          "center_error_m": 0.0516267818893926,
+          "f1": 0.06896551724137931,
+          "length_error_m": 0.10000000000000009,
+          "precision": 0.058823529411764705,
+          "recall": 0.08333333333333333,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 158.96600620089964
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.026398553045946706,
+          "center_error_m": 0.7845620305460511,
+          "f1": 0.058091286307053944,
+          "length_error_m": 1.3264474699837818,
+          "precision": 0.04487179487179487,
+          "recall": 0.08235294117647059,
+          "width_error_m": 0.5163131833757671,
+          "yaw_error_deg": 83.11219022212795
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      }
+    },
+    "centerpoint_from_scratch": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 3.26765349802307e-05,
+          "center_error_m": 0.35787169456355494,
+          "f1": 0.0012325390304026294,
+          "length_error_m": 2.1477162682215374,
+          "precision": 0.0006272214091574326,
+          "recall": 0.03529411764705882,
+          "width_error_m": 0.3294547913869222,
+          "yaw_error_deg": 14.610746645674666
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      }
+    },
+    "hybrid_fusion": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.32749428789032753,
+          "center_error_m": 0.2377462311081122,
+          "f1": 0.34782608695652173,
+          "length_error_m": 0.28593805285313917,
+          "precision": 0.4,
+          "recall": 0.3076923076923077,
+          "width_error_m": 0.07887227176435355,
+          "yaw_error_deg": 91.89416548780258
+        },
+        "iou_0.50": {
+          "ap": 0.0712871287128713,
+          "center_error_m": 0.1541360745198671,
+          "f1": 0.17391304347826086,
+          "length_error_m": 0.09474178849061843,
+          "precision": 0.2,
+          "recall": 0.15384615384615385,
+          "width_error_m": 0.03021042708431204,
+          "yaw_error_deg": 93.86219892244804
+        },
+        "iou_0.70": {
+          "ap": 0.0712871287128713,
+          "center_error_m": 0.1541360745198671,
+          "f1": 0.17391304347826086,
+          "length_error_m": 0.09474178849061843,
+          "precision": 0.2,
+          "recall": 0.15384615384615385,
+          "width_error_m": 0.03021042708431204,
+          "yaw_error_deg": 93.86219892244804
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.5294829482948294,
+          "center_error_m": 0.113774913177899,
+          "f1": 0.3125,
+          "length_error_m": 0.07094442408643184,
+          "precision": 0.19230769230769232,
+          "recall": 0.8333333333333334,
+          "width_error_m": 0.037085264712742115,
+          "yaw_error_deg": 66.15509582773281
+        },
+        "iou_0.50": {
+          "ap": 0.36149614961496157,
+          "center_error_m": 0.09635062248361187,
+          "f1": 0.28124999999999994,
+          "length_error_m": 0.07644249417615076,
+          "precision": 0.17307692307692307,
+          "recall": 0.75,
+          "width_error_m": 0.030838974152783076,
+          "yaw_error_deg": 54.942749439591466
+        },
+        "iou_0.70": {
+          "ap": 0.06743674367436743,
+          "center_error_m": 0.05128755293613156,
+          "f1": 0.125,
+          "length_error_m": 0.08414698534288154,
+          "precision": 0.07692307692307693,
+          "recall": 0.3333333333333333,
+          "width_error_m": 0.042681286060582996,
+          "yaw_error_deg": 55.99777481375287
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.6157057264722487,
+          "center_error_m": 0.6089978218571562,
+          "f1": 0.6624203821656051,
+          "length_error_m": 0.5554104948777419,
+          "precision": 0.7222222222222222,
+          "recall": 0.611764705882353,
+          "width_error_m": 0.11220830796315119,
+          "yaw_error_deg": 9.204559022417964
+        },
+        "iou_0.50": {
+          "ap": 0.39824173293209103,
+          "center_error_m": 0.31779592491670544,
+          "f1": 0.5095541401273886,
+          "length_error_m": 0.3556684648036956,
+          "precision": 0.5555555555555556,
+          "recall": 0.47058823529411764,
+          "width_error_m": 0.1041333799123764,
+          "yaw_error_deg": 4.566840164334369
+        },
+        "iou_0.70": {
+          "ap": 0.2221552376167695,
+          "center_error_m": 0.1842243636303423,
+          "f1": 0.3184713375796179,
+          "length_error_m": 0.2707867202758788,
+          "precision": 0.3472222222222222,
+          "recall": 0.29411764705882354,
+          "width_error_m": 0.09168873420715329,
+          "yaw_error_deg": 3.1672550539074207
+        }
+      }
+    },
+    "hybrid_lidar_branch": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.15577557755775578,
+          "center_error_m": 0.3070951633046997,
+          "f1": 0.1935483870967742,
+          "length_error_m": 0.46663427003224695,
+          "precision": 0.16666666666666666,
+          "recall": 0.23076923076923078,
+          "width_error_m": 0.11642995389302573,
+          "yaw_error_deg": 87.02712582114155
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.5013094867652738,
+          "center_error_m": 0.15964808632308836,
+          "f1": 0.392156862745098,
+          "length_error_m": 0.10141813955307008,
+          "precision": 0.2564102564102564,
+          "recall": 0.8333333333333334,
+          "width_error_m": 0.09312696399688718,
+          "yaw_error_deg": 57.495173864829574
+        },
+        "iou_0.50": {
+          "ap": 0.20313954472370313,
+          "center_error_m": 0.09785512380333102,
+          "f1": 0.196078431372549,
+          "length_error_m": 0.07495926256179812,
+          "precision": 0.1282051282051282,
+          "recall": 0.4166666666666667,
+          "width_error_m": 0.10107929115295407,
+          "yaw_error_deg": 78.84496881171108
+        },
+        "iou_0.70": {
+          "ap": 0.0385038503850385,
+          "center_error_m": 0.021411559346707312,
+          "f1": 0.07843137254901959,
+          "length_error_m": 0.058468508720397994,
+          "precision": 0.05128205128205128,
+          "recall": 0.16666666666666666,
+          "width_error_m": 0.08616795802116389,
+          "yaw_error_deg": 26.34322117997309
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.6157057264722487,
+          "center_error_m": 0.634949372489417,
+          "f1": 0.4656488549618321,
+          "length_error_m": 0.5952985047825048,
+          "precision": 0.3446327683615819,
+          "recall": 0.7176470588235294,
+          "width_error_m": 0.120016212760425,
+          "yaw_error_deg": 13.843963300756235
+        },
+        "iou_0.50": {
+          "ap": 0.39824173293209103,
+          "center_error_m": 0.3381074658545689,
+          "f1": 0.366412213740458,
+          "length_error_m": 0.33771160856882726,
+          "precision": 0.2711864406779661,
+          "recall": 0.5647058823529412,
+          "width_error_m": 0.10564943134784699,
+          "yaw_error_deg": 7.926776422110748
+        },
+        "iou_0.70": {
+          "ap": 0.2221552376167695,
+          "center_error_m": 0.18547878123904055,
+          "f1": 0.22137404580152667,
+          "length_error_m": 0.2693193409360688,
+          "precision": 0.1638418079096045,
+          "recall": 0.3411764705882353,
+          "width_error_m": 0.09046821087804331,
+          "yaw_error_deg": 3.144136203161013
+        }
+      }
+    },
+    "pointpillars_from_scratch": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.018406523407881344,
+          "center_error_m": 0.949953686037318,
+          "f1": 0.036269430051813475,
+          "length_error_m": 0.8547283688613349,
+          "precision": 0.019191226867717615,
+          "recall": 0.32941176470588235,
+          "width_error_m": 0.31041153109925135,
+          "yaw_error_deg": 50.412455968353825
+        },
+        "iou_0.50": {
+          "ap": 0.007290431633257809,
+          "center_error_m": 0.5068895266178612,
+          "f1": 0.007772020725388601,
+          "length_error_m": 0.637858061949412,
+          "precision": 0.00411240575736806,
+          "recall": 0.07058823529411765,
+          "width_error_m": 0.21392965567111974,
+          "yaw_error_deg": 36.40798292607679
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      }
+    },
+    "sfa3d_five_sweep": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.07920792079207921,
+          "center_error_m": 0.19203627758201305,
+          "f1": 0.125,
+          "length_error_m": 0.5465109081268311,
+          "precision": 0.3333333333333333,
+          "recall": 0.07692307692307693,
+          "width_error_m": 0.16913129091262813,
+          "yaw_error_deg": 22.811322731901196
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.10850676904425137,
+          "center_error_m": 0.19224056407739293,
+          "f1": 0.1904761904761905,
+          "length_error_m": 0.08298993158340451,
+          "precision": 0.2222222222222222,
+          "recall": 0.16666666666666666,
+          "width_error_m": 0.13696277117729183,
+          "yaw_error_deg": 39.75167462719808
+        },
+        "iou_0.50": {
+          "ap": 0.03293594665589008,
+          "center_error_m": 0.09545327981014484,
+          "f1": 0.09523809523809525,
+          "length_error_m": 0.045782279968261674,
+          "precision": 0.1111111111111111,
+          "recall": 0.08333333333333333,
+          "width_error_m": 0.07951445579528804,
+          "yaw_error_deg": 12.0623367194883
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.34802165612457725,
+          "center_error_m": 0.43213006331636883,
+          "f1": 0.3941605839416058,
+          "length_error_m": 0.4698186579103823,
+          "precision": 0.5192307692307693,
+          "recall": 0.3176470588235294,
+          "width_error_m": 0.11462145660541673,
+          "yaw_error_deg": 14.397629046779885
+        },
+        "iou_0.50": {
+          "ap": 0.2683536351651363,
+          "center_error_m": 0.2462990475830583,
+          "f1": 0.33576642335766427,
+          "length_error_m": 0.4361700885606849,
+          "precision": 0.4423076923076923,
+          "recall": 0.27058823529411763,
+          "width_error_m": 0.12418300583051596,
+          "yaw_error_deg": 15.322550505717693
+        },
+        "iou_0.70": {
+          "ap": 0.07207090562865974,
+          "center_error_m": 0.15925110545058455,
+          "f1": 0.16058394160583944,
+          "length_error_m": 0.3073637969277122,
+          "precision": 0.21153846153846154,
+          "recall": 0.12941176470588237,
+          "width_error_m": 0.1058938318599354,
+          "yaw_error_deg": 4.22000758206738
+        }
+      }
+    },
+    "sfa3d_single_sweep": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.15577557755775578,
+          "center_error_m": 0.30710274048475283,
+          "f1": 0.1935483870967742,
+          "length_error_m": 0.4670261507034302,
+          "precision": 0.16666666666666666,
+          "recall": 0.23076923076923078,
+          "width_error_m": 0.11652192385991415,
+          "yaw_error_deg": 86.93788256944616
+        },
+        "iou_0.50": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.5013094867652738,
+          "center_error_m": 0.15966122286280915,
+          "f1": 0.392156862745098,
+          "length_error_m": 0.101245005941391,
+          "precision": 0.2564102564102564,
+          "recall": 0.8333333333333334,
+          "width_error_m": 0.09310565533637997,
+          "yaw_error_deg": 57.4516596474341
+        },
+        "iou_0.50": {
+          "ap": 0.20313954472370313,
+          "center_error_m": 0.09784946604561637,
+          "f1": 0.196078431372549,
+          "length_error_m": 0.07491622800827029,
+          "precision": 0.1282051282051282,
+          "recall": 0.4166666666666667,
+          "width_error_m": 0.10104900007247922,
+          "yaw_error_deg": 78.74379321953568
+        },
+        "iou_0.70": {
+          "ap": 0.0385038503850385,
+          "center_error_m": 0.021381376624542352,
+          "f1": 0.07843137254901959,
+          "length_error_m": 0.05842890143394475,
+          "precision": 0.05128205128205128,
+          "recall": 0.16666666666666666,
+          "width_error_m": 0.0860691335201263,
+          "yaw_error_deg": 26.320251253794336
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.615703850068152,
+          "center_error_m": 0.6349492399057242,
+          "f1": 0.4656488549618321,
+          "length_error_m": 0.5954584914660845,
+          "precision": 0.3446327683615819,
+          "recall": 0.7176470588235294,
+          "width_error_m": 0.11994946728378045,
+          "yaw_error_deg": 13.84292709542967
+        },
+        "iou_0.50": {
+          "ap": 0.3982411451383267,
+          "center_error_m": 0.338108304558096,
+          "f1": 0.366412213740458,
+          "length_error_m": 0.33787359412511186,
+          "precision": 0.2711864406779661,
+          "recall": 0.5647058823529412,
+          "width_error_m": 0.10560732314984005,
+          "yaw_error_deg": 7.926558985667653
+        },
+        "iou_0.70": {
+          "ap": 0.2221552376167695,
+          "center_error_m": 0.18547941536198034,
+          "f1": 0.22137404580152667,
+          "length_error_m": 0.26959807691902943,
+          "precision": 0.1638418079096045,
+          "recall": 0.3411764705882353,
+          "width_error_m": 0.0904396787511891,
+          "yaw_error_deg": 3.1426814098983917
+        }
+      }
+    },
+    "sfa3d_unmodified": {
+      "Cyclist": {
+        "iou_0.30": {
+          "ap": 0.007200720072007201,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.50": {
+          "ap": 0.007200720072007201,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Pedestrian": {
+        "iou_0.30": {
+          "ap": 0.3664309288071665,
+          "center_error_m": 0.16876308334495832,
+          "f1": 0.43478260869565216,
+          "length_error_m": 0.26779969568252565,
+          "precision": 0.45454545454545453,
+          "recall": 0.4166666666666667,
+          "width_error_m": 0.17361641645431516,
+          "yaw_error_deg": 101.21547884080951
+        },
+        "iou_0.50": {
+          "ap": 0.13762376237623763,
+          "center_error_m": 0.1576647465112312,
+          "f1": 0.17391304347826086,
+          "length_error_m": 0.06293337345123295,
+          "precision": 0.18181818181818182,
+          "recall": 0.16666666666666666,
+          "width_error_m": 0.1951595511436462,
+          "yaw_error_deg": 154.30678157003956
+        },
+        "iou_0.70": {
+          "ap": 0.0,
+          "center_error_m": 0.0,
+          "f1": 0.0,
+          "length_error_m": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "width_error_m": 0.0,
+          "yaw_error_deg": 0.0
+        }
+      },
+      "Vehicle": {
+        "iou_0.30": {
+          "ap": 0.36060695336869464,
+          "center_error_m": 0.5266647074747177,
+          "f1": 0.4444444444444445,
+          "length_error_m": 0.32612220419777765,
+          "precision": 0.4675324675324675,
+          "recall": 0.4235294117647059,
+          "width_error_m": 0.24284255486064488,
+          "yaw_error_deg": 17.06648662498235
+        },
+        "iou_0.50": {
+          "ap": 0.2594063813344568,
+          "center_error_m": 0.29247639975678186,
+          "f1": 0.35802469135802467,
+          "length_error_m": 0.32232988910017346,
+          "precision": 0.37662337662337664,
+          "recall": 0.3411764705882353,
+          "width_error_m": 0.25565502567948956,
+          "yaw_error_deg": 8.416707656841446
+        },
+        "iou_0.70": {
+          "ap": 0.09612545361176343,
+          "center_error_m": 0.18549283442648618,
+          "f1": 0.22222222222222224,
+          "length_error_m": 0.2700510032441881,
+          "precision": 0.23376623376623376,
+          "recall": 0.21176470588235294,
+          "width_error_m": 0.22079708676868012,
+          "yaw_error_deg": 2.281132086464643
+        }
+      }
+    }
+  },
+  "negative_controls": {
+    "centerpoint": "from-scratch center-head baseline collapses under the same small-data regime",
+    "five_sweep_sfa3d": "ego compensation aligns static structure but moving-object trails reduce validation macro-F1",
+    "pointpillars": "from-scratch anchor baseline overfits the 70-recording training role"
+  },
+  "privacy": {
+    "licensed_sensor_values_persisted": false,
+    "per_frame_predictions_persisted": false,
+    "raw_ids_persisted": false
+  },
+  "schema": "zod-bev-release-evidence-v2",
+  "selection": {
+    "average_precision": "101-point interpolated AP; class-consistent oriented BEV matching",
+    "camera_depth_sweeps": 5,
+    "detector_sweeps": 1,
+    "promoted": "single-sweep ZOD-fine-tuned SFA3D + five-sweep camera depth fusion",
+    "validation_confidence": {
+      "camera_lifted": 0.8,
+      "fused": 0.2,
+      "lidar": 0.1
+    }
+  }
+}
