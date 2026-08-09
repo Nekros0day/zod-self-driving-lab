@@ -20,11 +20,13 @@ class BEVDetection:
     width_m: float
     yaw_rad: float
     confidence: float = 1.0
+    z_m: float = 0.0
+    height_m: float = 1.0
 
     def __post_init__(self) -> None:
         if not self.class_name.strip():
             raise ValueError("class_name cannot be empty")
-        if self.length_m <= 0.0 or self.width_m <= 0.0:
-            raise ValueError("BEV dimensions must be positive")
+        if self.length_m <= 0.0 or self.width_m <= 0.0 or self.height_m <= 0.0:
+            raise ValueError("box dimensions must be positive")
         if not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must lie in [0, 1]")

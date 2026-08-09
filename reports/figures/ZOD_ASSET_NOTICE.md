@@ -16,6 +16,8 @@ This notice applies to:
 - `bev_detection_mini.png`
 - `bev_tracking.png`
 - `bev_tracking.gif`
+- `bev_v2_fusion_comparison.png`
+- `bev_v2_fusion_comparison.gif`
 
 Required ZOD notice:
 

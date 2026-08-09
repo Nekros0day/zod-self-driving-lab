@@ -66,8 +66,8 @@ def project_map() -> Any:
 This project has three deliberately separated learning tracks. The dynamics track
 maps **causal vehicle state history → future ego path**. The segmentation track
 maps **one front-camera image → overlapping road and lane masks**. The BEV track
-maps **a calibrated LiDAR sweep → oriented dynamic-object footprints and temporal
-tracks**. Keeping the targets separate prevents an attractive but unsupported
+maps **calibrated LiDAR plus camera evidence → oriented dynamic-object footprints
+and temporal tracks**. Keeping the targets separate prevents an unsupported
 claim that one perception output already improves trajectory prediction.
 
 The scientific hierarchy is:
@@ -89,7 +89,7 @@ The three tracks share an experimental method, not a learned feature path.
 |---|---|---:|---|---:|
 | Dynamics | normalized state values + validity mask | $B\times21\times9$ each | anchor-local $(x,y)$ future | $B\times30\times2$ |
 | Segmentation | RGB front image | $B\times3\times288\times512$ | road/lane logits | $B\times2\times288\times512$ |
-| BEV perception | intensity/height/density raster | $B\times3\times608\times608$ | class, center, size, yaw | variable detections |
+| BEV perception | BEV raster + front image | $B\times3\times608\times608$ + RGB | class, center, size, yaw | variable detections |
 
 The history covers $[-2,0]$ s at 10 Hz and the trajectory target covers
 $(0,3]$ s. The two segmentation channels are independent because a lane
@@ -1348,20 +1348,20 @@ def bev_perception() -> Any:
                 """
 ## Learning objective and system boundary
 
-This track turns one calibrated ZOD LiDAR sweep into a metric bird's-eye view
-(BEV), predicts oriented objects, and links detections through time. It answers
-**what occupies the space around the ego vehicle?** It does not choose a route,
-plan around an obstacle, or control steering and braking.
+This track asks **what occupies the metric space around the ego vehicle?** It
+turns calibrated LiDAR and front-camera evidence into oriented bird's-eye-view
+(BEV) objects. It does not choose a route, forecast another driver's intent, or
+control steering and braking.
 
 ```text
 raw LiDAR → motion compensation → LiDAR-to-ego SE(3) → 3-channel BEV
           → SFA3D center detector → metric oriented boxes → Kalman tracks
 ```
 
-The detector is the official MIT-licensed SFA3D FPN-ResNet-18 checkpoint trained
-on KITTI, kept outside this repository. The ZOD adapter, rasterizer, evaluator,
-tracker, and visualizer are implemented here. This is therefore a fixed
-**cross-dataset transfer diagnostic**, not a claim of ZOD-trained performance.
+The final experiment moves beyond the original 12-frame transfer diagnostic.
+It uses protected 70/16/30 recording roles, staged ZOD fine-tuning, native
+PointPillars and CenterPoint controls, single-versus-five-sweep selection, and
+calibrated camera-LiDAR fusion. External source and weights remain outside Git.
 """
             ),
             md(
@@ -1428,7 +1428,7 @@ inside one cell are deliberately discarded.
             ),
             md(
                 r"""
-## Detector architecture: center-based oriented boxes
+## SFA3D architecture: center-based oriented boxes
 
 SFA3D uses an FPN-ResNet-18 backbone and several dense heads on a downsampled
 BEV feature map:
@@ -1441,9 +1441,10 @@ BEV feature map:
 | `dim` | object dimensions | length and width |
 | `z_coor` | vertical center | retained by SFA3D, outside 2-D metric here |
 
-The heatmap formulation avoids proposing thousands of anchors. Peak decoding
-selects at most 50 centers above the frozen 0.20 confidence threshold. Pixel
-centers and dimensions are then scaled back into metres in the ZOD ego frame.
+The heatmap formulation avoids proposing thousands of anchors. Local maxima are
+confidence-ranked and mapped from pixels back into ZOD ego metres. The operating
+threshold is selected on validation; AP ranks confidences rather than depending
+on one attractive test threshold.
 """
             ),
             code(
@@ -1465,12 +1466,11 @@ ax.set_title('External frozen detector; local ZOD coordinate adapter'); plt.show
             ),
             md(
                 r"""
-## What training losses produced the checkpoint?
+## Target encoding, loss, and staged transfer learning
 
-Although this project does not retrain SFA3D, understanding its outputs matters.
-A CenterNet-style objective uses focal loss on the center heatmap and masked
-regression losses at true object centers for offset, direction, height, and
-dimensions. Schematically,
+Each object center creates a class-specific Gaussian target. A CenterNet-style
+objective uses focal loss for that dense heatmap and masked regression only at
+true centers for offset, direction, height, and dimensions:
 
 \[
 \mathcal L=\mathcal L_{focal}(\hat H,H)
@@ -1480,13 +1480,63 @@ dimensions. Schematically,
 +\lambda_z\|\hat z-z\|_1.
 \]
 
-Only peaks at inference become `BEVDetection(class, x, y, length, width, yaw,
-confidence)`. The adapter never retrains or silently recalibrates the checkpoint
-on the 12 ZOD mini frames.
+The center mask is essential: implementation selects valid regression values
+*before* Smooth-L1 reduction, avoiding undefined `inf * 0`. Training starts from
+the pinned KITTI checkpoint. Stage 1 learns heads, stage 2 unfreezes the FPN and
+deep backbone, and stage 3 fine-tunes the complete network. Class-balanced
+sampling raises rare-user exposure; early stopping uses validation only.
 """
             ),
             md(
                 r"""
+## Native 3-D controls: PointPillars and CenterPoint
+
+The native baselines learn directly from points instead of inheriting the KITTI
+BEV feature extractor. A pillar groups points in one vertical column and embeds
+point coordinates, offsets from the pillar mean, and offsets from its center:
+
+\[
+f_P=\max_{i\in P}\phi([p_i,p_i-\bar p_P,p_i-c_P]).
+\]
+
+The max-pooled pillar features form a sparse pseudo-image. PointPillars uses
+anchor classification and box residuals. The CenterPoint control uses the same
+pillar idea with anchor-free Gaussian centers and box heads. Both were trained
+from scratch on the same protected roles. Their poor sealed-test results are an
+important control: 70 recordings are insufficient to learn robust 3-D features
+and rare classes without transfer. This does not mean the full architecture
+families are intrinsically weak.
+
+## Multiple sweeps: more evidence can be worse
+
+For point \(p_i\) captured at time \(t_i\), ego motion maps it to the keyframe:
+
+\[
+p_i^{e_0}=(T^w_{e_0})^{-1}T^w_{e_i}T^{e_i}_{L}p_i^L.
+\]
+
+This aligns the static world. It cannot align a pedestrian or vehicle that moves
+independently between scans, so five sweeps leave object trails. Validation
+macro-F1 was 0.154 for one sweep and 0.117 for five. The detector therefore uses
+one sweep; the camera foreground-depth estimator uses five because robust depth
+benefits from denser in-box returns.
+
+## Camera depth lifting and class-gated fusion
+
+Faster R-CNN supplies image-space semantic boxes. ZOD's calibrated
+Kannala-Brandt camera projects a ray using
+
+\[
+r(\theta)=\theta+k_1\theta^3+k_2\theta^5+k_3\theta^7+k_4\theta^9.
+\]
+
+LiDAR points projected into the lower/central foreground of a camera box provide
+a robust depth. The ray and depth lift that box into ego coordinates. Same-class
+metric proposals are associated. Camera-only Pedestrian and Cyclist proposals
+may supplement LiDAR, but Vehicle predictions and confidences pass through
+unchanged. This explicit gate guarantees that a weaker camera vehicle estimate
+cannot reduce LiDAR vehicle AP.
+
 ## Oriented intersection-over-union
 
 Axis-aligned IoU would reward a box with the wrong heading. I construct each
@@ -1502,9 +1552,11 @@ clip the two convex polygons, and report
 IoU_{BEV}=\frac{|P\cap G|}{|P|+|G|-|P\cap G|}.
 \]
 
-Predictions and labels are greedily matched one-to-one, class consistently, in
-descending IoU order at (IoU\ge0.5). Precision measures false alarms; recall
-measures missed annotated objects; matched center error measures localization.
+Predictions and labels are matched one-to-one and class consistently. A
+confidence-ranked precision-recall curve yields 101-point interpolated AP at
+IoU 0.30, 0.50, and 0.70. The evaluator also reports center, yaw, length, and
+width errors; near/mid/far range slices; expected calibration error; and Brier
+score. Validation selects fixed operating thresholds separately from AP.
 """
             ),
             code(
@@ -1562,90 +1614,90 @@ ax.plot(track_xy[:,0],track_xy[:,1],'o-',label='Kalman estimate'); ax.set_aspect
             ),
             md(
                 """
-## Fixed evaluation contract
+## Protected evaluation contract
 
-- Data: all 12 annotated frames in ZOD Frames mini.
+- Data: 70 train, 16 validation, and 30 sealed test ZOD Sequences recordings.
 - Targets: non-unclear Vehicle, Pedestrian, and VulnerableVehicle 3-D boxes,
   converted into ego-frame Vehicle, Pedestrian, and Cyclist footprints.
 - Scope: target centers inside the 50 m × 50 m front raster.
-- Frozen model: SFA3D FPN-ResNet-18 at a pinned source commit and checkpoint hash.
-- No ZOD fine-tuning, confidence sweep, per-frame persistence, or attractive-case
-  selection affects the reported metrics.
+- Models: staged ZOD-fine-tuned SFA3D, native PointPillars/CenterPoint controls,
+  and calibrated camera-LiDAR fusion.
+- Sweep count, checkpoints, and confidence thresholds use validation only.
+- Roles are recording-disjoint, exclude mini, and are bound by private ID hashes.
 
-This small subset can expose domain-transfer failure; it cannot establish broad
-detector quality. The qualitative montage uses the first three sorted mini
-frames, a deterministic rule fixed independently of outcomes.
+Only 120 locally available recordings had complete required sensors. The cohort
+supports a bounded comparison, not a production-scale or full-Frames claim.
 """
             ),
             code(
                 """
-bev_report=json.loads((ROOT/'reports/bev_detection_mini.json').read_text())
-evaluation=bev_report['evaluation']; rows=[]
-for name,metrics in [('All',evaluation['all']),*evaluation['by_class'].items()]:
-    rows.append([name,metrics['precision'],metrics['recall'],metrics['f1'],metrics['mean_matched_iou'],metrics['mean_center_error_m']])
-bev_table=pd.DataFrame(rows,columns=['class','precision','recall','F1','matched IoU','center error (m)'])
-bev_table.round(3)
+bev_report=json.loads((ROOT/'reports/bev_v2_summary.json').read_text())
+roles=pd.DataFrame(bev_report['dataset']['roles']).T
+roles[['recordings','vehicle_instances','pedestrian_instances','cyclist_instances']]
 """
             ),
             code(
                 """
-plot=bev_table.set_index('class')[['precision','recall','F1']]
-ax=plot.plot.bar(figsize=(9,4),color=['#38bdf8','#f59e0b','#8b5cf6'])
-ax.set_ylim(0,1); ax.set_ylabel('score'); ax.set_title('Fixed KITTI → ZOD mini transfer diagnostic')
-ax.legend(loc='upper right'); plt.xticks(rotation=0); plt.tight_layout(); plt.show()
+names={'sfa3d_unmodified':'Unmodified transfer',
+       'sfa3d_single_sweep':'Fine-tuned SFA3D',
+       'hybrid_fusion':'Hybrid fusion',
+       'pointpillars_from_scratch':'PointPillars',
+       'centerpoint_from_scratch':'CenterPoint'}
+rows=[]
+for key,label in names.items():
+    values=bev_report['models'][key]
+    rows.append([label,*[values[c]['iou_0.30']['ap'] for c in ['Vehicle','Pedestrian','Cyclist']]])
+ap_table=pd.DataFrame(rows,columns=['model','Vehicle','Pedestrian','Cyclist']).set_index('model')
+ap_table.round(3)
 """
             ),
             md(
                 """
 ## Reading the result honestly
 
-Vehicle localization transfers surprisingly well when a match exists: vehicle
-precision is 0.864, recall 0.528, matched IoU 0.718, and matched-center error
-0.293 m. Overall F1 is 0.503 across 104 targets.
+Fine-tuning raises AP@0.30 from 0.361/0.366/0.007 to
+0.616/0.501/0.156 for Vehicle/Pedestrian/Cyclist. Fusion preserves Vehicle at
+0.616 by construction and raises Pedestrian to 0.529 and Cyclist to 0.327.
 
-The failure is just as important: pedestrian and cyclist true positives are
-zero. KITTI-to-ZOD differences in class appearance, density, sensor setup, and
-decoding are too large for this fixed checkpoint. A Tesla-like picture is not
-evidence of a safe perception stack. The appropriate next experiment is a
-proper ZOD train/validation/test detector benchmark (and possibly camera–LiDAR
-fusion), not threshold tuning on these 12 evaluation frames.
+The native from-scratch controls fail, and five-sweep detector input loses to
+one sweep. Transfer matters in this small-data regime, and ego-motion-compensated
+accumulation is not object-motion compensation. The bounded test still contains
+few vulnerable users, so it motivates a larger confirmation, not a safety claim.
 """
             ),
             code(
                 """
 from IPython.display import Image as NotebookImage, display
-display(NotebookImage(filename=str(ROOT/'reports/figures/bev_detection_mini.png')))
+display(NotebookImage(filename=str(ROOT/'reports/figures/bev_v2_pipeline.png')))
+display(NotebookImage(filename=str(ROOT/'reports/figures/bev_v2_fusion_comparison.png')))
 """
             ),
             md(
                 """
-The green rectangles above are ZOD ground-truth footprints; cyan, orange, and
-purple are model predictions. The front-camera row is context only—the LiDAR
-detector never receives RGB. The point-cloud background makes occlusion and
-sparse returns visible rather than presenting boxes on an unexplained blank map.
+The camera panel explains semantic recognition; the BEV panels compare
+LiDAR-only and fused metric predictions against green ground truth. Qualitative
+examples aid interpretation; all sealed detections determine promotion.
 """
             ),
             code(
                 """
-display(NotebookImage(filename=str(ROOT/'reports/figures/bev_tracking.png')))
+display(NotebookImage(filename=str(ROOT/'reports/figures/bev_v2_test_ap.png')))
+display(NotebookImage(filename=str(ROOT/'reports/figures/bev_v2_pr_curves.png')))
 """
             ),
             md(
                 """
 ## Reproduction and review checklist
 
-1. Keep ZOD, the pinned SFA3D source, and its checkpoint outside Git.
-2. Rebuild `reports/bev_detection_mini.json` with
-   `scripts/evaluate_bev_detection.py`; all paths are explicit CLI arguments.
-3. Rebuild the montage/GIF with `scripts/build_bev_visuals.py`.
-4. Verify the checkpoint SHA-256 and external source commit in the report.
-5. Inspect oriented-IoU, coordinate-transform, raster, and tracker tests.
-6. Do not call the animated sequence a tracking benchmark: it is a qualitative
-   demonstration because that sequence has no frame-by-frame 3-D box labels.
+1. Build private roles with `scripts/prepare_bev_roles.py`.
+2. Cache one- and five-sweep inputs with `scripts/cache_bev_training_data.py`.
+3. Train all three detectors with `scripts/train_bev_detectors.py`.
+4. Freeze validation choices, then benchmark detectors and fusion on test.
+5. Rebuild aggregate evidence and visuals with the two `build_bev_v2_*` scripts.
+6. Test projection, fusion invariance, masked targets, rasterization, oriented
+   IoU, AP, calibration, range slicing, and tracking.
 
-The complete animation is embedded in the README. Raw point clouds, images,
-annotations, checkpoint weights, identifiers, and per-frame predictions remain
-outside the repository.
+Raw assets, IDs, caches, weights, and per-frame predictions remain private.
 """
             ),
         ],
@@ -1678,8 +1730,10 @@ ZOD keyframes ── road/lane masks ──────┬─ DeepLabV3-MobileNe
                                        ├─ ResNet-18 U-Net
                                        └─ Fourier U-Net ──► overlapping masks
 
-ZOD LiDAR ── calibrated BEV ────────────┬─ SFA3D oriented boxes
-                                       └─ Kalman association ──► object tracks
+ZOD LiDAR ── calibrated BEV ────────────┬─ fine-tuned SFA3D boxes ─┐
+ZOD camera ── semantics + LiDAR depth ─┴─ class-gated fusion ────┼─► BEV objects
+Point pillars ──────────────────────────── native controls ──────┘
+Fused boxes ── Kalman association ─────────────────────────────────► object tracks
 ```
 """
             ),
@@ -1718,7 +1772,9 @@ positive favors the candidate.
 | Does FNO preserve accuracy at lower latency? | ADE and GPU latency | Yes |
 | Do U-Net skips improve thin lanes? | DeepLab vs both U-Nets | Yes |
 | Does Fourier U-Net beat U-Net? | Direct paired CI and efficiency | Not established |
-| Does a KITTI LiDAR detector transfer to ZOD? | Fixed 12-frame mini diagnostic | Vehicles partly; vulnerable users do not |
+| Does ZOD fine-tuning repair transfer? | Protected 70/16/30 roles | Yes, for all three classes |
+| Does camera fusion help rare users? | Sealed AP, vehicle pass-through | Yes, especially Cyclist |
+| Do five detector sweeps help? | Validation sweep comparison | No; moving trails hurt |
 """
             ),
             code(
@@ -1805,7 +1861,10 @@ fig.suptitle('Illustration only: a high-error slice may have little support'); p
 | DeepLab | atrous semantic context | weighted multilabel BCE | weaker thin-detail recovery here |
 | U-Net | multiscale encoder skips | weighted multilabel BCE | larger than DeepLab reference |
 | Fourier U-Net | U-Net + global spectral bottleneck | same BCE | 4× parameters, no reliable score gain |
-| SFA3D | BEV center heatmaps + box heads | external focal + regression losses | KITTI→ZOD class/domain shift |
+| SFA3D transfer | FPN BEV center heatmaps + box heads | focal + masked box regression | bounded labeled cohort |
+| PointPillars | learned pillar features + anchors | focal/class + box regression | from-scratch overfit here |
+| CenterPoint | learned pillars + anchor-free centers | focal + masked box regression | from-scratch overfit here |
+| Camera-LiDAR fusion | semantic boxes + metric depth | detector losses; rule-based association | sparse projected depth |
 | Kalman tracker | constant-velocity Gaussian state | recursive filtering, no learned loss | simple nearest-neighbor association |
 
 Promotion is not determined by training loss. The chosen checkpoint is judged by
@@ -1834,8 +1893,8 @@ Pause before expanding each answer.
    Its paired interval crosses zero and its compute cost is much higher.
 
 5. **What is the cleanest next experiment?**  
-   Train a ZOD-native BEV detector with a protected split, then test whether
-   camera–LiDAR fusion repairs the vulnerable-road-user transfer gap.
+   Confirm the hybrid on a larger Frames cohort, then compare object-aware
+   temporal fusion with a pretrained full-scale CenterPoint or BEVFusion model.
 
 6. **Why is temporal FNO called best if its NeuralODE gap is tiny?**  
    It is the best measured and promoted engineering point: essentially tied
@@ -1848,9 +1907,8 @@ Pause before expanding each answer.
    over ordinary U-Net is uncertain and computationally expensive.
 
 8. **Is the BEV animation evidence of a good pedestrian detector?**
-   No. The fixed transfer diagnostic has zero pedestrian and cyclist true
-   positives. It demonstrates calibrated geometry, decoding, and temporal
-   state estimation—not a safety or multi-object-tracking claim.
+   No. The quantitative sealed test supports the bounded detector claim; a GIF
+   only explains geometry and fusion. It is not a safety or MOT benchmark.
 """
             ),
             code(
@@ -1862,7 +1920,9 @@ scorecard = pd.DataFrame([
     ["Hybrid NeuralODE", True, False, "retain as physics study"],
     ["ResNet-18 U-Net", True, True, "promote"],
     ["Fourier U-Net", False, False, "retain as complexity control"],
-    ["SFA3D KITTI→ZOD", False, True, "retain as transfer baseline"],
+    ["Fine-tuned SFA3D", True, True, "promote LiDAR branch"],
+    ["Hybrid BEV fusion", True, True, "promote"],
+    ["PointPillars / CenterPoint", False, False, "retain as small-data controls"],
 ], columns=["model","reliable_gain","efficient_frontier","decision"])
 scorecard
 """
@@ -1884,7 +1944,9 @@ connect the visible behavior back to the sealed quantitative result.
 
 ![Segmentation outputs](../reports/figures/segmentation_model_comparison.png)
 
-![LiDAR BEV detection](../reports/figures/bev_detection_mini.png)
+![LiDAR-camera BEV fusion](../reports/figures/bev_v2_fusion_comparison.png)
+
+![BEV AP benchmark](../reports/figures/bev_v2_test_ap.png)
 """
             ),
             code(
@@ -1893,9 +1955,10 @@ connect the visible behavior back to the sealed quantitative result.
 required=[
     'README.md','docs/methods.md','docs/data_and_evaluation.md','docs/interview_guide.md',
     'reports/v4_dynamics_test.json','reports/v4_segmentation_test.json',
-    'reports/bev_detection_mini.json',
+    'reports/bev_protected_roles.json','reports/bev_v2_summary.json',
     'src/zod_driveformer/dynamics/models.py','src/zod_driveformer/segmentation/models.py',
-    'src/zod_driveformer/bev/representation.py','src/zod_driveformer/bev/tracking.py',
+    'src/zod_driveformer/bev/representation.py','src/zod_driveformer/bev/fusion.py',
+    'src/zod_driveformer/bev/pillars.py','src/zod_driveformer/bev/tracking.py',
 ]
 pd.DataFrame([(name,(ROOT/name).exists()) for name in required],columns=['artifact','present'])
 """
@@ -1912,9 +1975,9 @@ and allow a sophisticated model to lose when its gain is not reliable.
 The concise project story is: **continuous and spectral dynamics reliably beat
 the strong state MLP; temporal FNO is the best accuracy–latency choice; U-Net
 skips reliably repair thin-lane segmentation; extra Fourier capacity in the
-U-Net bottleneck does not justify its cost; calibrated LiDAR BEV provides a
-working vehicle-transfer baseline while exposing a serious vulnerable-road-user
-domain gap.**
+U-Net bottleneck does not justify its cost; protected ZOD fine-tuning repairs
+LiDAR transfer; class-gated camera fusion preserves vehicle geometry while
+materially improving cyclist AP.**
 """
             ),
         ],

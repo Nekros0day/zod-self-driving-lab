@@ -1,0 +1,46 @@
+{
+  "ids_persisted": false,
+  "mini_recordings_excluded": 2,
+  "recording_disjoint": true,
+  "role_policy": {
+    "test": "sealed bounded sample of official ZOD Sequences val",
+    "train": "bounded sample of official ZOD Sequences train",
+    "validation": "disjoint bounded sample of official ZOD Sequences train"
+  },
+  "roles": {
+    "test": {
+      "cyclist_instances": 18,
+      "frames_with_cyclist": 5,
+      "frames_with_pedestrian": 6,
+      "frames_with_vehicle": 30,
+      "id_set_sha256": "b11f2b2df3381fd4c8b0bc4c896078262a69d532cae795b5d0aff867663fe362",
+      "pedestrian_instances": 31,
+      "recordings": 30,
+      "vehicle_instances": 351
+    },
+    "train": {
+      "cyclist_instances": 28,
+      "frames_with_cyclist": 10,
+      "frames_with_pedestrian": 17,
+      "frames_with_vehicle": 69,
+      "id_set_sha256": "95a6a08188ba44cab63764605a1b871594e63c3358805edd1919253d86c57970",
+      "pedestrian_instances": 50,
+      "recordings": 70,
+      "vehicle_instances": 852
+    },
+    "validation": {
+      "cyclist_instances": 24,
+      "frames_with_cyclist": 8,
+      "frames_with_pedestrian": 11,
+      "frames_with_vehicle": 16,
+      "id_set_sha256": "84a73a1d0c4713d8633f03a01f0d1b990cef244eca7dedacfc3b60b903df6116",
+      "pedestrian_instances": 53,
+      "recordings": 16,
+      "vehicle_instances": 220
+    }
+  },
+  "schema": "zod-bev-protected-roles-v1",
+  "seed": 20260809,
+  "sensor_availability_required": true,
+  "zod_subset": "Sequences"
+}

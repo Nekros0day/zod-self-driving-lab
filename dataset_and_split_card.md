@@ -40,13 +40,22 @@ The split was redesigned because metrics on the previous test role had already
 been observed. Test selection uses seeded SHA-256 ranking within country; strata
 with fewer than three examples remain in train.
 
-## BEV transfer samples
+## BEV samples
 
-The transfer diagnostic uses all 12 annotated keyframes in ZOD Frames mini. One
-sample contains a motion-compensated LiDAR sweep, calibration, and eligible
-dynamic 3-D boxes. There are 104 non-unclear in-range targets after mapping
-Vehicle, Pedestrian, and VulnerableVehicle to the three detector classes. No
-training or model selection is performed on these frames.
+One sample is an annotated central keyframe from a ZOD Sequence recording with
+complete front image, LiDAR, calibration, ego motion, and official 3-D boxes.
+The two mini recordings are excluded. Roles are recording-disjoint:
+
+| Role | Recordings | Vehicle labels | Pedestrian labels | Cyclist labels |
+|---|---:|---:|---:|---:|
+| Train | 70 | 852 | 50 | 28 |
+| Validation | 16 | 220 | 53 | 24 |
+| Test | 30 | 351 | 31 | 18 |
+
+Label counts precede in-range and quality filtering. Training uses train only;
+checkpoint, sweep count, and operating thresholds use validation. Test is loaded
+after those choices are fixed. Private ID sets are SHA-256 bound in the public
+role receipt.
 
 A separate 20-second ZOD sequence supplies only the qualitative tracker GIF. It
 is not used to compute detection or MOT metrics.
@@ -64,5 +73,5 @@ never serialized into public reports.
 - Segmentation has only 51 final test keyframes and sparse rare-country coverage.
 - No closed-loop control or interaction with other road users is evaluated.
 - Country, weather, and collection-car shifts are not separately powered.
-- The 12-frame BEV diagnostic is too small for general detector conclusions;
-  its fixed KITTI checkpoint has zero vulnerable-road-user true positives.
+- The BEV roles cover locally complete annotated Sequences, not the full Frames
+  release; rare-user support is still too small for general safety conclusions.

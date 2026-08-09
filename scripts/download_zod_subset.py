@@ -36,10 +36,25 @@ BASE_ARCHIVES = (
     "vehicle_data.tar.gz",
 )
 BLURRED_CAMERA_ARCHIVE = re.compile(r"images_blur_\d{6}_\d{6}\.tar\.gz\Z")
+FRAMES_ARCHIVE = re.compile(
+    r"(?:annotations|infos|images_front_blur|lidar_velodyne_(?:core|(?:0[1-9]|10)(?:before|after)))\.tar\.gz\Z"
+)
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--subset",
+        choices=("sequences", "frames"),
+        default="sequences",
+        help="official ZOD archive folder to inspect",
+    )
+    parser.add_argument(
+        "--archive",
+        action="append",
+        default=[],
+        help="exact Frames archive name; repeat for more than one",
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -118,6 +133,19 @@ def _requested_archive_names(
     if not ordered_unique:
         raise ValueError("no archives were selected")
     return ordered_unique
+
+
+def _requested_frames_archives(names: Iterable[str]) -> tuple[str, ...]:
+    selected: list[str] = []
+    for raw_name in names:
+        name = str(raw_name).strip()
+        if not FRAMES_ARCHIVE.fullmatch(name):
+            raise ValueError("unsupported or unsafe ZOD Frames archive name")
+        selected.append(name)
+    result = tuple(dict.fromkeys(selected))
+    if not result:
+        raise ValueError("Frames downloads require at least one exact --archive")
+    return result
 
 
 def _external_output_dir(value: Path) -> Path:
@@ -364,17 +392,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     granted_url = _validate_granted_url(url_value)
     output_dir = _external_output_dir(args.output_dir)
-    selected_names = _requested_archive_names(
-        args.camera_shard,
-        include_base_streams=not args.no_base_streams,
-    )
+    if args.subset == "frames":
+        if args.camera_shard or args.no_base_streams:
+            raise ValueError("--camera-shard/--no-base-streams apply only to Sequences")
+        selected_names = _requested_frames_archives(args.archive)
+    else:
+        if args.archive:
+            raise ValueError("--archive applies only to Frames")
+        selected_names = _requested_archive_names(
+            args.camera_shard,
+            include_base_streams=not args.no_base_streams,
+        )
     sdk = _sdk_download_symbols()
     dbx = sdk["ResumableDropbox"](
         app_key=sdk["APP_KEY"],
         oauth2_refresh_token=sdk["REFRESH_TOKEN"],
         timeout=sdk["TIMEOUT"],
     )
-    available = {entry.name: entry for entry in sdk["list_folder"](granted_url, dbx, "sequences")}
+    available = {
+        entry.name: entry
+        for entry in sdk["list_folder"](granted_url, dbx, args.subset)
+    }
     missing = [name for name in selected_names if name not in available]
     if missing:
         raise RuntimeError(f"selected archives are absent from the granted folder: {missing}")
@@ -389,14 +427,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("No files changed. Re-run with --execute after reviewing this selection.")
         return 0
 
-    download_dir = output_dir / "downloads" / "sequences"
+    download_dir = output_dir / "downloads" / args.subset
     output_dir.mkdir(parents=True, exist_ok=True)
     download_dir.mkdir(parents=True, exist_ok=True)
     for name in selected_names:
         entry = available[name]
         info = sdk["DownloadExtractInfo"](
             url=granted_url,
-            file_path=f"/sequences/{name}",
+            file_path=f"/{args.subset}/{name}",
             extract_dir=str(output_dir),
             dl_dir=str(download_dir),
             rm=bool(args.remove_archives),

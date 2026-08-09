@@ -3,79 +3,83 @@
 ## Access and storage
 
 ZOD access is granted by Zenseact. I do not redistribute images, annotations,
-metadata, tensors, or download locators. Every licensed derivative is required
-to resolve outside the repository. Public cache receipts bind private files by
-SHA-256 while exposing only aggregate shapes and counts.
+metadata, tensors, identifiers, or download locators. Licensed source data,
+caches, and checkpoints resolve outside the repository. Public receipts bind
+private ID sets by SHA-256 and expose only aggregate counts.
 
 ## Dynamics roles
 
 | Role | Recordings | Windows | Used for |
 |---|---:|---:|---|
-| Train | 315 | 11,208 | Parameter fitting and shooting boundaries |
-| Validation | 73 | 2,600 | Epoch/checkpoint selection |
+| Train | 315 | 11,208 | Fitting and shooting boundaries |
+| Validation | 73 | 2,600 | Checkpoint selection |
 | Test | 72 | 2,549 | One frozen evaluation |
 
-The normalizer is inherited from the original train role. Test data never
-refits means or scales. Sample and split membership are checksum-bound.
+The normalizer is fitted on train only. Sample and role membership are
+checksum-bound. Test never changes normalization, epochs, or model choices.
 
 ## Segmentation roles
 
-The earlier standalone segmentation project had already exposed aggregate test
-metrics. Reusing that test would bias a new architecture benchmark. I therefore:
+The earlier standalone project had exposed aggregate test metrics, so that test
+could not remain final. I preserved its 73 validation recordings, selected a
+fresh country-stratified 51-recording test role from old train, and trained on
+the remaining 365 recordings. Every architecture and seed was retrained from
+the same ImageNet starting conditions.
 
-1. preserve all 73 old validation recordings;
-2. deterministically select 51 country-stratified recordings from old train as
-   the new final test;
-3. combine remaining old train with the 73 previously observed test examples,
-   yielding 365 training recordings;
-4. retrain every model and seed from ImageNet initialization.
+## BEV roles
 
-Tiny-country strata with fewer than three examples are retained in training.
-The split assignment hash is public; raw recording IDs remain private.
+The final BEV experiment uses annotated central keyframes from locally complete
+ZOD Sequences recordings. A recording is eligible only when image, LiDAR,
+calibration, ego motion, and official 3-D object labels are all available. The
+two mini recordings are excluded. A fixed seed produced these disjoint roles:
+
+| Role | Recordings | Vehicle labels | Pedestrian labels | Cyclist labels |
+|---|---:|---:|---:|---:|
+| Train | 70 | 852 | 50 | 28 |
+| Validation | 16 | 220 | 53 | 24 |
+| Sealed test | 30 | 351 | 31 | 18 |
+
+Counts above describe metadata labels before range, visibility, and dynamic-class
+filtering. Private recording IDs are not published; their set hashes and the
+selection policy are stored in `reports/bev_protected_roles.json`.
+
+The available cohort is bounded by local sensor completeness. It is substantially
+stronger than the original 12-frame smoke test, but it is not the full ZOD Frames
+benchmark. A larger Frames confirmation remains future work.
 
 ## Selection and calibration
 
 - Dynamics checkpoints minimize validation ADE.
-- Segmentation checkpoints maximize the fixed-threshold validation score.
-- Road and lane thresholds are then selected independently on a fixed validation
-  grid from 0.30 to 0.75.
-- Test metrics do not affect epochs, thresholds, hyperparameters, or model
-  promotion.
-
-## BEV transfer diagnostic
-
-The BEV experiment uses all 12 annotated keyframes in ZOD Frames mini and an
-unchanged KITTI-pretrained SFA3D checkpoint. It is neither trained nor selected
-on ZOD. The confidence threshold (0.20), top-K limit (50), spatial crop, class
-map, and oriented-IoU match threshold (0.50) are fixed in code.
-
-Targets are non-unclear Vehicle, Pedestrian, and VulnerableVehicle boxes with
-centers inside the front raster. Boxes are converted from their annotation
-frame to ego coordinates before evaluation. The public report contains only
-aggregate counts, scores, source/checkpoint hashes, and timing; no recording
-identifiers or per-frame predictions are retained.
-
-Because the mini subset has only 12 frames, this experiment is a reproducible
-smoke/domain-shift diagnostic. It is not assigned the inferential status of the
-sealed trajectory and segmentation benchmarks.
+- Segmentation checkpoints maximize validation score; road/lane thresholds are
+  independently selected on validation.
+- BEV training uses class-balanced sampling and early stopping on validation
+  loss. The SFA3D sweep count and operating confidence are selected on validation.
+- Camera, LiDAR, and fusion confidence thresholds are independently selected on
+  validation. The sealed test does not influence them.
+- Five-sweep detector input lost to one sweep on validation and is retained as a
+  negative temporal-control result.
 
 ## Metrics
 
 Trajectory ADE averages Euclidean distance over 30 horizons; FDE uses the last
 valid horizon; miss rate is the fraction with FDE above two metres.
 
-Segmentation reports global pixel confusion metrics and per-image metrics.
-The composite score is half road IoU plus half lane tolerant F1. Model-pair
-confidence intervals use per-image differences, which preserves pairing.
+Segmentation reports global pixel metrics and per-image metrics. The promotion
+score is half road IoU plus half three-pixel-tolerant lane F1. Model-pair
+intervals use paired per-image differences.
 
-BEV detection reports class-consistent precision, recall, F1, mean matched
-oriented IoU, and matched center error. The sequence GIF has no corresponding
-framewise target stream and is therefore explicitly qualitative.
+BEV detection uses confidence-ranked 101-point AP with class-consistent,
+one-to-one oriented box matching at IoU 0.30, 0.50, and 0.70. The report also
+contains precision-recall curves, center/yaw/size error, 0-20/20-35/35-50 m
+range slices, and expected calibration error/Brier score. A fixed confidence
+operating point is reported separately from AP.
 
 ## Integrity notes
 
-The first trajectory evaluator revision averaged seed predictions, creating an
-implicit ensemble. This was inconsistent with the preregistered seed-reduction
-rule. Revision 2 recomputed the report as the arithmetic mean of each
-per-sample metric. No checkpoint or configuration changed. The correction is
-recorded in the machine-readable test report rather than hidden.
+The trajectory evaluator's first revision averaged seed predictions, creating
+an unintended ensemble. Revision 2 recomputed the result as the preregistered
+mean of per-sample metrics without changing checkpoints or configurations.
+
+The BEV mini transfer diagnostic remains useful historical evidence, but it no
+longer supports the promoted claim. The final claim comes from the protected
+70/16/30 recording study.

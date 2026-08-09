@@ -3,16 +3,18 @@
 ## Decision summary
 
 - **Promote temporal FNO for state-based trajectory forecasting.** It ties the
-  best accuracy, has a reliable −0.131 m ADE improvement over B2, and is much
-  faster than either ODE.
-- **Retain hybrid NeuralODE as the interpretable physics study.** It improves B2
-  reliably but does not outperform the unconstrained alternatives.
-- **Promote ResNet-18 U-Net for affordance segmentation.** It captures nearly
-  all Fourier U-Net accuracy at one quarter of the parameters and lower latency.
-- **Keep Fourier U-Net as a negative complexity control.** Its direct score
-  difference from U-Net is compatible with zero.
-- **Keep SFA3D as a pinned BEV transfer baseline, not a promoted ZOD detector.**
-  Vehicle localization is useful, while pedestrian and cyclist recall is zero.
+  best accuracy, improves ADE by 0.131 m over B2, and is much faster than either
+  ODE.
+- **Retain hybrid NeuralODE as the interpretable physics study.** It reliably
+  improves B2 but does not beat the less constrained alternatives.
+- **Promote ResNet-18 U-Net for affordance segmentation.** It captures almost
+  all Fourier U-Net accuracy with one quarter of the parameters.
+- **Promote the hybrid BEV system.** A ZOD-fine-tuned, single-sweep SFA3D branch
+  supplies metric geometry; calibrated five-sweep camera depth lifting adds
+  pedestrian and cyclist proposals. Vehicle predictions pass through unchanged.
+- **Retain PointPillars, CenterPoint, and five-sweep detector input as negative
+  controls.** They show that architecture names and extra points do not replace
+  transfer learning or correct temporal treatment on a small cohort.
 
 ## Dynamics
 
@@ -27,11 +29,11 @@ Three-seed means on 2,549 windows / 72 recording groups:
 
 Paired ADE differences versus B2:
 
-| Candidate − B2 | Estimate | 95% recording bootstrap |
+| Candidate - B2 | Estimate | 95% recording bootstrap |
 |---|---:|---:|
-| Hybrid NeuralODE | −0.1226 | [−0.1475, −0.0971] |
-| NeuralODE | −0.1297 | [−0.1550, −0.1046] |
-| Temporal FNO | **−0.1308** | **[−0.1546, −0.1080]** |
+| Hybrid NeuralODE | -0.1226 | [-0.1475, -0.0971] |
+| NeuralODE | -0.1297 | [-0.1550, -0.1046] |
+| Temporal FNO | **-0.1308** | **[-0.1546, -0.1080]** |
 
 ## Segmentation
 
@@ -47,33 +49,56 @@ Per-image paired score differences:
 
 | Comparison | Estimate | 95% recording bootstrap |
 |---|---:|---:|
-| U-Net − DeepLab | +0.1355 | [+0.1165, +0.1560] |
-| Fourier U-Net − DeepLab | +0.1365 | [+0.1179, +0.1577] |
-| Fourier U-Net − U-Net | **+0.0010** | **[−0.0072, +0.0094]** |
+| U-Net - DeepLab | +0.1355 | [+0.1165, +0.1560] |
+| Fourier U-Net - DeepLab | +0.1365 | [+0.1179, +0.1577] |
+| Fourier U-Net - U-Net | **+0.0010** | **[-0.0072, +0.0094]** |
 
-## LiDAR BEV transfer diagnostic
+## LiDAR-camera BEV detection
 
-Fixed KITTI-pretrained SFA3D evaluation on all 12 ZOD Frames mini keyframes
-(104 in-range dynamic labels), with class-consistent oriented IoU ≥ 0.5:
+The protected ZOD Sequences cohort contains 70 train, 16 validation, and 30
+sealed test recordings. Roles are recording-disjoint, exclude the mini subset,
+and require a front image, LiDAR, calibration, ego motion, and 3-D labels.
+Model, sweep count, checkpoints, and confidence thresholds were chosen using
+train/validation only.
 
-| Class | Precision | Recall | F1 | Matched IoU | Center error |
-|---|---:|---:|---:|---:|---:|
-| All | 0.8085 | 0.3654 | 0.5033 | 0.7183 | 0.2935 m |
-| Vehicle | **0.8636** | **0.5278** | **0.6552** | **0.7183** | **0.2935 m** |
-| Pedestrian | 0.0000 | 0.0000 | 0.0000 | — | — |
-| Cyclist | 0.0000 | 0.0000 | 0.0000 | — | — |
+Test average precision uses 101-point interpolation and class-consistent,
+one-to-one oriented-BEV matching:
 
-The model receives no ZOD fine-tuning and uses a fixed confidence threshold.
-These numbers diagnose transfer behavior on a very small subset; they are not
-treated as a statistically powered detector comparison.
+| Model | Vehicle AP@0.30 | Pedestrian AP@0.30 | Cyclist AP@0.30 |
+|---|---:|---:|---:|
+| Unmodified KITTI SFA3D | 0.361 | 0.366 | 0.007 |
+| ZOD fine-tuned SFA3D, one sweep | **0.616** | 0.501 | 0.156 |
+| **Hybrid LiDAR-camera fusion** | **0.616** | **0.529** | **0.327** |
+| PointPillars, from scratch | 0.018 | 0.000 | 0.000 |
+| CenterPoint head, from scratch | 0.000 | 0.000 | 0.000 |
+
+The hybrid deliberately passes Vehicle detections and confidence through
+unchanged. Camera proposals can supplement only Pedestrian and Cyclist, so the
+vehicle AP equality is guaranteed by construction rather than inferred from a
+rounded number. Pedestrian AP increases by 0.028 and cyclist AP by 0.172.
+
+At stricter IoU thresholds, the fused AP values are:
+
+| Class | AP@0.30 | AP@0.50 | AP@0.70 |
+|---|---:|---:|---:|
+| Vehicle | 0.616 | 0.398 | 0.222 |
+| Pedestrian | 0.529 | 0.361 | 0.067 |
+| Cyclist | 0.327 | 0.071 | 0.071 |
+
+Five ego-motion-compensated sweeps are useful for estimating camera-object
+depth, but feeding them directly to the detector reduced validation macro-F1.
+Static structure aligns while moving objects leave trails. The promoted design
+therefore uses one sweep for detection and five sweeps only inside the
+foreground-depth estimator.
 
 ## Evidence files
 
-- `v4_dynamics_test.json`: seed-level metrics, grouped intervals, latency, and
-  checkpoint hashes.
-- `v4_segmentation_test.json`: seed thresholds, global metrics, paired
-  improvements, latency, and checkpoint hashes.
-- `benchmark_summary.json`: consolidated public evidence and learning curves.
-- `bev_detection_mini.json`: pinned source/checkpoint identity, fixed protocol,
-  aggregate per-class metrics, and latency for the transfer diagnostic.
-- `figures/`: aggregate plots only; no ZOD image or mask is redistributed.
+- `v4_dynamics_test.json`: seed metrics, grouped intervals, latency, and hashes.
+- `v4_segmentation_test.json`: thresholds, metrics, paired improvements, and hashes.
+- `bev_protected_roles.json`: privacy-preserving role counts and ID-set hashes.
+- `bev_v2_summary.json`: consolidated aggregate BEV metrics and selection record.
+- `benchmark_summary.json`: consolidated dynamics/segmentation learning curves.
+- `figures/`: aggregate plots and attributed qualitative ZOD derivatives.
+
+Raw ZOD assets, identifiers, checkpoints, caches, and per-frame predictions are
+not distributed by this repository.
