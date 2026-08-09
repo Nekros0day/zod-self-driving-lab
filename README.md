@@ -152,18 +152,18 @@ The executed notebooks are the main teaching surface:
 
 | Notebook | What it teaches |
 |---|---|
-| `00_project_map.ipynb` | Claims, experimental contracts, and how to read the evidence |
-| `01_geometry_splits_and_baselines.ipynb` | Local SE(2), causal windows, group splits, CV and CTRV |
-| `02_neural_ode_and_multiple_shooting.ipynb` | ODE states, RK4, multiple shooting, and hybrid physics |
-| `03_fourier_operators.ipynb` | Spectral convolution, temporal FNO, and accuracy–latency trade-offs |
-| `04_road_lane_segmentation.ipynb` | U-Net skips, Fourier bottlenecks, class imbalance, thin-lane metrics |
-| `05_lidar_bev_detection_and_tracking.ipynb` | SE(3), temporal sweeps, SFA3D transfer learning, pillars, fusion, AP/calibration, and tracking |
-| `06_interview_capstone.ipynb` | Defensible claims, failure analysis, and interview questions |
+| `00_project_map.ipynb` | Raw-to-evidence workflow, tensor contracts, experiment ledger, and measured claims |
+| `01_geometry_splits_and_baselines.ipynb` | Signal synchronization, missingness, train-only normalization, local SE(2), group splits, CV, and CTRV |
+| `02_neural_ode_and_multiple_shooting.ipynb` | GRU context, continuous states, RK4, multiple-shooting supervision, losses, and hybrid vehicle physics |
+| `03_fourier_operators.ipynb` | DFT intuition, spectral convolution tensors, causal query grids, temporal FNO, padding, and accuracy–latency trade-offs |
+| `04_road_lane_segmentation.ipynb` | Polygon rasterization, resize/augmentation rules, normalized batches, U-Net skips, imbalance, thresholds, and thin-lane metrics |
+| `05_lidar_bev_detection_and_tracking.ipynb` | Point-cloud validation, SE(3), BEV rasterization, heatmap targets, temporal sweeps, transfer learning, fusion, AP/calibration, and tracking |
+| `06_project_synthesis.ipynb` | A personal end-to-end reconstruction of the data paths, comparisons, failure analysis, and implementation map |
 
 The mathematical reference is [methods.md](docs/methods.md), the exact data and
 evaluation contract is [data_and_evaluation.md](docs/data_and_evaluation.md),
-and concise interview rehearsal is in
-[interview_guide.md](docs/interview_guide.md).
+and the conclusions I use when returning to the work are in
+[project_learning_review.md](docs/project_learning_review.md).
 
 ## Reproduce
 
