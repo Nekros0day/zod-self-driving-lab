@@ -2,13 +2,18 @@
 
 ## The 30-second version
 
-I built two leakage-audited ZOD studies. For three-second ego forecasting, I
+I built two leakage-audited ZOD benchmarks plus a calibrated LiDAR perception
+study. For three-second ego forecasting, I
 compared a true multiple-shooting NeuralODE, a kinematic hybrid ODE, and a
 temporal FNO against CV, CTRV, and a frozen state MLP. All three new models
 reliably improved ADE; temporal FNO was best at 0.542 m and 2.69 ms. For camera
 affordances, a ResNet-18 U-Net improved thin-lane tolerant F1 from 0.654 to
 0.861. A Fourier U-Net tied it but required four times the parameters, so I
 promoted the ordinary U-Net.
+I then built a 608×608 LiDAR BEV detector and Kalman tracker. A frozen
+KITTI-trained SFA3D checkpoint transferred reasonably to matched vehicles
+(0.718 IoU and 0.293 m center error), but produced zero pedestrian/cyclist true
+positives on ZOD mini, exposing the domain gap instead of hiding it.
 
 ## Questions I should be ready for
 
@@ -55,9 +60,26 @@ zero, while parameters rise from 14.4M to 56.8M and latency from 2.93 to 4.99
 ms. Promotion should consider uncertainty and deployment cost, not only the
 third decimal place.
 
+### What does the BEV detector receive and predict?
+
+It receives a motion-compensated LiDAR sweep in the calibrated ZOD ego frame,
+rasterized as intensity, top-height, and log-density. SFA3D predicts center
+heatmaps plus offset, size, direction, and vertical heads. The adapter decodes
+oriented ground-plane boxes in metres; a separate constant-velocity Kalman
+filter estimates track velocity over time.
+
+### Why is the BEV result useful if vulnerable users fail?
+
+It validates the complete sensor-to-metric-box path and establishes a pinned,
+reproducible vehicle baseline. More importantly, the per-class evaluation shows
+that a KITTI checkpoint cannot be presented as a general ZOD detector. The next
+credible step is ZOD-native training with a protected split or camera–LiDAR
+fusion, not choosing a favorable threshold on the 12 mini frames.
+
 ### What would I do next?
 
-- jointly condition trajectory dynamics on compact segmentation/road geometry;
+- train and evaluate a ZOD-native BEV detector on protected recording splits;
+- test camera–LiDAR fusion for pedestrians and cyclists;
 - add temporally labeled camera frames rather than single keyframes;
 - test calibration under country, weather, and collection-car shift;
 - distill the FNO trajectory model if edge latency becomes restrictive;
@@ -70,3 +92,4 @@ third decimal place.
 - FNO is not significantly more accurate than NeuralODE.
 - Fourier U-Net is not established as better than U-Net.
 - A 51-recording segmentation test cannot establish broad geographic safety.
+- The 12-frame BEV transfer diagnostic is not a detector or tracking benchmark.

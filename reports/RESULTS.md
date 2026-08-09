@@ -11,6 +11,8 @@
   all Fourier U-Net accuracy at one quarter of the parameters and lower latency.
 - **Keep Fourier U-Net as a negative complexity control.** Its direct score
   difference from U-Net is compatible with zero.
+- **Keep SFA3D as a pinned BEV transfer baseline, not a promoted ZOD detector.**
+  Vehicle localization is useful, while pedestrian and cyclist recall is zero.
 
 ## Dynamics
 
@@ -49,6 +51,22 @@ Per-image paired score differences:
 | Fourier U-Net − DeepLab | +0.1365 | [+0.1179, +0.1577] |
 | Fourier U-Net − U-Net | **+0.0010** | **[−0.0072, +0.0094]** |
 
+## LiDAR BEV transfer diagnostic
+
+Fixed KITTI-pretrained SFA3D evaluation on all 12 ZOD Frames mini keyframes
+(104 in-range dynamic labels), with class-consistent oriented IoU ≥ 0.5:
+
+| Class | Precision | Recall | F1 | Matched IoU | Center error |
+|---|---:|---:|---:|---:|---:|
+| All | 0.8085 | 0.3654 | 0.5033 | 0.7183 | 0.2935 m |
+| Vehicle | **0.8636** | **0.5278** | **0.6552** | **0.7183** | **0.2935 m** |
+| Pedestrian | 0.0000 | 0.0000 | 0.0000 | — | — |
+| Cyclist | 0.0000 | 0.0000 | 0.0000 | — | — |
+
+The model receives no ZOD fine-tuning and uses a fixed confidence threshold.
+These numbers diagnose transfer behavior on a very small subset; they are not
+treated as a statistically powered detector comparison.
+
 ## Evidence files
 
 - `v4_dynamics_test.json`: seed-level metrics, grouped intervals, latency, and
@@ -56,4 +74,6 @@ Per-image paired score differences:
 - `v4_segmentation_test.json`: seed thresholds, global metrics, paired
   improvements, latency, and checkpoint hashes.
 - `benchmark_summary.json`: consolidated public evidence and learning curves.
+- `bev_detection_mini.json`: pinned source/checkpoint identity, fixed protocol,
+  aggregate per-class metrics, and latency for the transfer diagnostic.
 - `figures/`: aggregate plots only; no ZOD image or mask is redistributed.

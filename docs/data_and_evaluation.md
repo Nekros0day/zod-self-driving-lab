@@ -42,6 +42,23 @@ The split assignment hash is public; raw recording IDs remain private.
 - Test metrics do not affect epochs, thresholds, hyperparameters, or model
   promotion.
 
+## BEV transfer diagnostic
+
+The BEV experiment uses all 12 annotated keyframes in ZOD Frames mini and an
+unchanged KITTI-pretrained SFA3D checkpoint. It is neither trained nor selected
+on ZOD. The confidence threshold (0.20), top-K limit (50), spatial crop, class
+map, and oriented-IoU match threshold (0.50) are fixed in code.
+
+Targets are non-unclear Vehicle, Pedestrian, and VulnerableVehicle boxes with
+centers inside the front raster. Boxes are converted from their annotation
+frame to ego coordinates before evaluation. The public report contains only
+aggregate counts, scores, source/checkpoint hashes, and timing; no recording
+identifiers or per-frame predictions are retained.
+
+Because the mini subset has only 12 frames, this experiment is a reproducible
+smoke/domain-shift diagnostic. It is not assigned the inferential status of the
+sealed trajectory and segmentation benchmarks.
+
 ## Metrics
 
 Trajectory ADE averages Euclidean distance over 30 horizons; FDE uses the last
@@ -50,6 +67,10 @@ valid horizon; miss rate is the fraction with FDE above two metres.
 Segmentation reports global pixel confusion metrics and per-image metrics.
 The composite score is half road IoU plus half lane tolerant F1. Model-pair
 confidence intervals use per-image differences, which preserves pairing.
+
+BEV detection reports class-consistent precision, recall, F1, mean matched
+oriented IoU, and matched center error. The sequence GIF has no corresponding
+framewise target stream and is therefore explicitly qualitative.
 
 ## Integrity notes
 
