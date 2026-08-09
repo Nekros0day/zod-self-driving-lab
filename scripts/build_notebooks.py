@@ -55,6 +55,578 @@ def notebook(title: str, cells: list[Any]) -> Any:
     return value
 
 
+def project_workflow_cells() -> list[Any]:
+    """Runnable orientation cells shared by the opening study notebook."""
+    return [
+        md(
+            """
+## How a raw sample becomes evidence
+
+I use the repository as a sequence of explicit transformations rather than as a
+collection of model scripts. Each arrow below has a shape, a coordinate frame,
+and a validation check. The raw ZOD files and identifiers stay outside Git; the
+public repository contains code, aggregate metrics, and deliberately selected
+qualitative panels.
+
+```text
+raw sensor record -> validate -> synchronize -> transform -> tensorize
+                  -> fit on train -> select on validation -> evaluate once on test
+                  -> aggregate by recording -> publish data-safe evidence
+```
+
+This separation is important to my learning: preprocessing is part of the
+model contract, not an invisible step before the interesting work begins.
+"""
+        ),
+        code(
+            """
+# A compact manifest lets me trace each public claim back to code and evidence.
+study_map = pd.DataFrame([
+    ["trajectory", "state history", "src/zod_driveformer/dynamics", "reports/v4_dynamics_test.json"],
+    ["segmentation", "front RGB + polygons", "src/zod_driveformer/segmentation", "reports/v4_segmentation_test.json"],
+    ["BEV perception", "LiDAR + camera + boxes", "src/zod_driveformer/bev", "reports/bev_v2_summary.json"],
+], columns=["track", "private input", "implementation", "public evidence"])
+study_map.assign(
+    implementation_exists=study_map.implementation.map(lambda p: (ROOT/p).exists()),
+    evidence_exists=study_map["public evidence"].map(lambda p: (ROOT/p).exists()),
+)
+"""
+        ),
+        md(
+            """
+## My experiment ledger
+
+For every model I record the same seven decisions: input, target, split unit,
+loss, validation selection rule, sealed metric, and runtime cost. This keeps a
+better-looking visualization from silently replacing the registered metric.
+"""
+        ),
+        code(
+            """
+ledger = pd.DataFrame([
+    ["Temporal FNO", "21x9 state + mask", "30x2 path", "recording", "trajectory displacement", "validation ADE", "test ADE/FDE + latency"],
+    ["ResNet-18 U-Net", "3x288x512 RGB", "2x288x512 masks", "recording", "weighted BCE", "road/lane score", "IoU + tolerant lane F1"],
+    ["Hybrid BEV", "BEV raster + camera", "oriented boxes", "recording", "focal + masked regression", "validation AP", "test AP + box errors"],
+], columns=["model", "input", "target", "split", "training loss", "selection", "final evidence"])
+ledger
+"""
+        ),
+        code(
+            """
+# The same experiment stages apply even though the physical outputs differ.
+stages=['raw data','validated sample','model tensor','prediction','sealed metric']
+fig,ax=plt.subplots(figsize=(11,3.2)); ax.set_xlim(-.3,4.3); ax.set_ylim(-.6,2.6); ax.axis('off')
+colors=['#2874a6','#239b56','#ca6f1e']
+for row,(track,color) in enumerate(zip(['trajectory','segmentation','BEV'],colors)):
+    y=2-row
+    for x,label in enumerate(stages):
+        ax.scatter(x,y,s=700,color=color,alpha=.18,edgecolor=color)
+        ax.text(x,y,label if row==0 else str(x+1),ha='center',va='center',fontsize=8)
+        if x<4: ax.annotate('',(x+1-.13,y),(x+.13,y),arrowprops={'arrowstyle':'->','color':color})
+    ax.text(-.3,y,track,ha='right',va='center',weight='bold',color=color)
+ax.set_title('A shared scientific workflow across three different sensor tasks')
+plt.show()
+"""
+        ),
+    ]
+
+
+def geometry_lab_cells() -> list[Any]:
+    return [
+        md(
+            r"""
+## Building the causal state table
+
+Vehicle signals do not necessarily arrive at exactly the same timestamps. I
+first sort and validate each stream, reject non-finite timestamps, and sample a
+fixed 10 Hz grid ending at the anchor. Continuous signals use interpolation
+only between available past observations. Discrete signals such as brakes and
+indicators use the most recent past value. I keep both the filled value and a
+validity/age channel so that zero does not ambiguously mean *measured zero* and
+*missing*.
+"""
+        ),
+        code(
+            """
+rng=np.random.default_rng(7)
+raw_t=np.sort(np.r_[-2.0, rng.uniform(-1.95,-.05,13), 0.0])
+raw_speed=8.0 + .7*(raw_t+2) + .12*rng.normal(size=len(raw_t))
+grid=np.arange(-2.0,.001,.1)
+speed=np.interp(grid,raw_t,raw_speed)
+last_idx=np.searchsorted(raw_t,grid,side='right')-1
+age=grid-raw_t[np.clip(last_idx,0,None)]
+valid=(last_idx>=0) & (age<=.35)
+speed_filled=np.where(valid,speed,0.0)
+fig,ax=plt.subplots(2,1,figsize=(10,5),sharex=True)
+ax[0].scatter(raw_t,raw_speed,label='asynchronous measurements',zorder=3)
+ax[0].plot(grid,speed,label='10 Hz interpolation'); ax[0].set_ylabel('speed (m/s)'); ax[0].legend()
+ax[1].step(grid,age,where='mid',label='observation age'); ax[1].fill_between(grid,0,1,where=~valid,alpha=.25,color='red',transform=ax[1].get_xaxis_transform(),label='masked')
+ax[1].axhline(.35,ls='--',color='black'); ax[1].set(xlabel='time before anchor (s)',ylabel='age (s)'); ax[1].legend()
+plt.tight_layout(); plt.show()
+print('model channels:', {'value': speed_filled.shape, 'validity': valid.shape, 'age': age.shape})
+"""
+        ),
+        md(
+            r"""
+## Coordinate transformation as executable geometry
+
+World coordinates are unsuitable targets because the same turn has different
+numbers in different places. If the anchor pose is $(x_0,y_0,\psi_0)$, I first
+translate a world point and then rotate by $-\psi_0$:
+
+\[
+\begin{bmatrix}x^e\\y^e\end{bmatrix}=
+\begin{bmatrix}\cos\psi_0&\sin\psi_0\\-\sin\psi_0&\cos\psi_0\end{bmatrix}
+\left(\begin{bmatrix}x^w\\y^w\end{bmatrix}-
+\begin{bmatrix}x_0\\y_0\end{bmatrix}\right).
+\]
+
+The local origin is therefore the current rear-axle/ego origin, $+x$ is
+forward, and $+y$ is left. The inverse transformation is a useful unit test.
+"""
+        ),
+        code(
+            """
+def world_to_anchor(points, anchor):
+    x0,y0,yaw=anchor
+    c,s=np.cos(yaw),np.sin(yaw)
+    return (points-np.array([x0,y0])) @ np.array([[c,-s],[s,c]])
+def anchor_to_world(points, anchor):
+    x0,y0,yaw=anchor
+    c,s=np.cos(yaw),np.sin(yaw)
+    return points @ np.array([[c,s],[-s,c]]) + np.array([x0,y0])
+
+anchor=(42.0,-7.0,np.deg2rad(35))
+t=np.linspace(0,3,31)
+local=np.c_[7*t, .45*t**2]
+world=anchor_to_world(local,anchor)
+recovered=world_to_anchor(world,anchor)
+assert np.allclose(local,recovered)
+fig,ax=plt.subplots(1,2,figsize=(11,4))
+ax[0].plot(world[:,0],world[:,1]); ax[0].scatter(*anchor[:2],marker='x',s=80); ax[0].set_title('world-frame path')
+ax[1].plot(recovered[:,0],recovered[:,1]); ax[1].scatter(0,0,marker='x',s=80); ax[1].set_title('same target in anchor-local frame')
+for a in ax: a.axis('equal'); a.set_xlabel('x (m)'); a.set_ylabel('y (m)')
+plt.tight_layout(); plt.show()
+"""
+        ),
+        md(
+            """
+## Normalization and recording-disjoint splitting
+
+I fit mean and scale on training observations only, then reuse those numbers on
+validation and test. A random window split is unsafe: neighboring anchors share
+most of their 2 s histories and belong to the same drive. The group assignment
+therefore happens at recording level before any overlapping windows are made.
+"""
+        ),
+        code(
+            """
+recordings=pd.DataFrame({'recording':[f'R{i:02d}' for i in range(12)],'windows':[92,105,88,121,99,111,84,95,103,118,91,108]})
+rng=np.random.default_rng(21)
+order=rng.permutation(len(recordings)); roles=np.empty(len(recordings),object)
+roles[order[:8]]='train'; roles[order[8:10]]='validation'; roles[order[10:]]='test'
+recordings['role']=roles
+assert recordings.groupby('recording').role.nunique().max()==1
+display(recordings.sort_values(['role','recording']))
+train_values=np.array([7.2,8.0,8.7,9.1,7.8]); mu=train_values.mean(); sigma=train_values.std()
+print(f'train-only transform: z=(x-{mu:.3f})/{sigma:.3f}')
+"""
+        ),
+    ]
+
+
+def ode_lab_cells() -> list[Any]:
+    return [
+        md(
+            r"""
+## From tensors to an initial-value problem
+
+The GRU reads only the 21 observed rows. Its final hidden state is context
+$c$. A small network combines $c$, the current ODE state, and known time
+features to produce a derivative. The solver—not the network—turns derivatives
+into positions. This distinction helped me understand that a NeuralODE is not
+"a neural network with time as one more label".
+"""
+        ),
+        code(
+            """
+B,H,F=4,21,9
+values=torch.randn(B,H,F); mask=(torch.rand(B,H,F)>.1).float()
+encoder=torch.nn.GRU(input_size=2*F,hidden_size=32,batch_first=True)
+_,hidden=encoder(torch.cat([values,mask],dim=-1))
+context=hidden[-1]
+z0=torch.zeros(B,4)  # [x, y, vx, vy]
+field_input=torch.cat([z0,context,torch.zeros(B,3)],dim=-1)
+print('history -> context:',tuple(values.shape),'->',tuple(context.shape))
+print('field input [state, context, time features]:',tuple(field_input.shape))
+"""
+        ),
+        md(
+            r"""
+## What multiple shooting changes during training
+
+I divide the 3 s target into shorter segments. Each segment is integrated with
+shared parameters, while a boundary encoder proposes its training-only initial
+state. The continuity penalty makes the end of segment $k$ agree with the
+start of $k+1$:
+
+\[
+\mathcal L = \mathcal L_{path} + \lambda_c
+\sum_k\|z_k(t_{k+1})-\tilde z_{k+1}\|_2^2.
+\]
+
+At inference I discard the boundary encoder and perform one causal rollout
+from the anchor. The target can influence optimization, but it can never enter
+`forward(history, mask)` at validation or test time.
+"""
+        ),
+        code(
+            """
+# A transparent one-dimensional shooting example.
+target=np.array([0.,.11,.24,.40,.59,.81,1.06])
+segments=[target[0:3],target[2:5],target[4:7]]
+starts=np.array([s[0] for s in segments])
+predicted_ends=np.array([.25,.56,1.03])
+continuity=(predicted_ends[:-1]-starts[1:])**2
+path_loss=np.mean((np.array([.10,.23,.39,.57,.80,1.03])-target[1:])**2)
+print('segment boundaries:',starts)
+print('continuity residuals:',predicted_ends[:-1]-starts[1:])
+print(f'path MSE={path_loss:.5f}, continuity MSE={continuity.mean():.5f}')
+fig,ax=plt.subplots(figsize=(9,3.5))
+for k,s in enumerate(segments):
+    x=np.arange(2*k,2*k+len(s)); ax.plot(x,s,'o-',label=f'segment {k}')
+ax.set(xlabel='future step',ylabel='state',title='Overlapping boundaries expose discontinuity during training'); ax.legend(); plt.show()
+"""
+        ),
+        md(
+            """
+## The hybrid state and its residual
+
+The hybrid decoder integrates interpretable vehicle variables such as position,
+heading, speed, and yaw rate. Kinematics provide the known derivative structure;
+the learned residual corrects effects that are not represented by the simplified
+model. Zero-initializing the residual head makes the first prediction equal to
+the physical prior and provides a useful implementation check.
+"""
+        ),
+        code(
+            """
+def bicycle_derivative(state,wheelbase=2.8):
+    x,y,yaw,v,steer=state
+    return np.array([v*np.cos(yaw),v*np.sin(yaw),v*np.tan(steer)/wheelbase,0.,0.])
+states=[np.array([0.,0.,0.,8.,a]) for a in (-.08,0,.08)]
+pd.DataFrame([bicycle_derivative(s) for s in states],index=['right','straight','left'],columns=['x_dot','y_dot','yaw_dot','v_dot','steer_dot']).round(4)
+"""
+        ),
+    ]
+
+
+def fourier_lab_cells() -> list[Any]:
+    return [
+        md(
+            r"""
+## Seeing a temporal signal in frequency space
+
+The discrete Fourier transform represents a length-$N$ signal using global
+sinusoidal modes. For mode $k$,
+
+\[
+\hat x_k=\sum_{n=0}^{N-1}x_n e^{-2\pi i kn/N}.
+\]
+
+Smooth driving histories concentrate energy in low temporal modes. A spectral
+layer learns complex channel mixing for a selected set of those modes, then an
+inverse transform returns to the time grid.
+"""
+        ),
+        code(
+            """
+n=64; t=np.arange(n)/n
+signal=1.2*np.sin(2*np.pi*2*t)+.35*np.sin(2*np.pi*11*t)+.08*np.random.default_rng(3).normal(size=n)
+spectrum=np.fft.rfft(signal); keep=6
+truncated=spectrum.copy(); truncated[keep:]=0
+smooth=np.fft.irfft(truncated,n=n)
+fig,ax=plt.subplots(1,2,figsize=(11,3.8))
+ax[0].plot(t,signal,label='input'); ax[0].plot(t,smooth,label=f'first {keep} modes'); ax[0].legend(); ax[0].set_xlabel('normalized time')
+ax[1].stem(np.arange(len(spectrum)),np.abs(spectrum),basefmt=' '); ax[1].axvline(keep-.5,color='red',ls='--'); ax[1].set(xlabel='mode',ylabel='magnitude')
+fig.suptitle('Low modes retain the smooth trend; high modes retain fast detail/noise'); plt.tight_layout(); plt.show()
+print('maximum imaginary reconstruction error:',np.max(np.abs(np.fft.irfft(spectrum,n)-signal)))
+"""
+        ),
+        md(
+            r"""
+## One spectral convolution with tensor shapes
+
+For input channels $c_{in}$ and output channels $c_{out}$, each retained mode
+has a complex matrix $W_k$. The learned operation is
+
+\[
+\hat y_{k,c_o}=\sum_{c_i}W_{k,c_i,c_o}\hat x_{k,c_i}.
+\]
+
+This mixes channels and time globally in one layer. Pointwise $1\times1$
+convolutions run in parallel to preserve local information.
+"""
+        ),
+        code(
+            """
+B,Cin,Cout,N,modes=2,3,5,51,8
+x=torch.randn(B,Cin,N)
+x_hat=torch.fft.rfft(x,dim=-1)
+weight=torch.randn(Cin,Cout,modes,dtype=torch.cfloat)/Cin
+y_hat=torch.zeros(B,Cout,x_hat.shape[-1],dtype=torch.cfloat)
+y_hat[:,:,:modes]=torch.einsum('bim,iom->bom',x_hat[:,:,:modes],weight)
+y=torch.fft.irfft(y_hat,n=N,dim=-1)
+print('x:',tuple(x.shape),'rFFT:',tuple(x_hat.shape),'retained:',modes,'output:',tuple(y.shape))
+"""
+        ),
+        md(
+            """
+## Queries, padding, and causality checks
+
+The 30 future rows are query locations, not future measurements. I fill their
+measurement channels with zero, repeat only the current observed state, and add
+known time coordinates. I pad the temporal grid before the FFT because the FFT
+otherwise treats the two ends as adjacent. A unit test should perturb a future
+target and prove that the model input is unchanged.
+"""
+        ),
+        code(
+            """
+history=np.arange(21*2,dtype=float).reshape(21,2)
+future_target_a=np.zeros((30,2)); future_target_b=np.ones((30,2))*999
+def make_operator_input(observed):
+    values=np.vstack([observed,np.zeros((30,observed.shape[1]))])
+    query=np.r_[np.zeros(len(observed)),np.ones(30)][:,None]
+    time=np.linspace(-2,3,51)[:,None]
+    return np.c_[values,time,query]
+xa=make_operator_input(history); xb=make_operator_input(history)
+assert np.array_equal(xa,xb)
+fig,ax=plt.subplots(figsize=(10,3)); ax.imshow(xa.T,aspect='auto',cmap='coolwarm'); ax.axvline(20.5,color='black');
+ax.set(xlabel='history locations | future query locations',ylabel='feature channel',title='Causal operator input'); plt.show()
+"""
+        ),
+    ]
+
+
+def segmentation_lab_cells() -> list[Any]:
+    return [
+        md(
+            """
+## From annotation polygons to training masks
+
+ZOD road annotations are geometric objects, while a segmentation network needs
+one value per output pixel. I scale polygon vertices into the training image,
+rasterize each class independently, and keep overlap. I then validate that the
+mask contains only 0/1 and that neither channel is unexpectedly empty.
+"""
+        ),
+        code(
+            """
+from matplotlib.path import Path as PolygonPath
+def rasterize_polygon(vertices,height,width):
+    yy,xx=np.mgrid[:height,:width]
+    points=np.c_[xx.ravel()+.5,yy.ravel()+.5]
+    return PolygonPath(np.asarray(vertices)).contains_points(points).reshape(height,width)
+
+H,W=96,160
+road_poly=np.array([[18,95],[55,38],[105,38],[146,95]])
+lane_poly=np.array([[76,95],[78,42],[82,42],[85,95]])
+road_mask=rasterize_polygon(road_poly,H,W)
+lane_mask=rasterize_polygon(lane_poly,H,W) & road_mask
+target=np.stack([road_mask,lane_mask]).astype(np.float32)
+assert set(np.unique(target)) <= {0.,1.}
+fig,ax=plt.subplots(1,3,figsize=(12,3)); ax[0].plot(*road_poly.T); ax[0].invert_yaxis(); ax[0].set_title('polygon coordinates')
+ax[1].imshow(target[0],cmap='Greens'); ax[1].set_title('rasterized road')
+ax[2].imshow(target[0],cmap='Greys'); ax[2].imshow(target[1],cmap='Oranges',alpha=.9); ax[2].set_title('independent overlapping channels')
+for a in ax: a.set_xlim(0,W); a.set_ylim(H,0); a.axis('off')
+plt.tight_layout(); plt.show()
+"""
+        ),
+        md(
+            """
+## Resize rules are different for images and labels
+
+Bilinear interpolation is appropriate for RGB because intensity is continuous.
+It is wrong for categorical masks because it invents intermediate classes.
+Nearest-neighbor interpolation preserves the discrete label set. Paired spatial
+augmentation must apply the same sampled transform to image and mask; color
+augmentation must touch only the image.
+"""
+        ),
+        code(
+            """
+small=torch.from_numpy(target[1]).view(1,1,H,W)
+nearest=torch.nn.functional.interpolate(small,size=(43,71),mode='nearest')
+bilinear=torch.nn.functional.interpolate(small,size=(43,71),mode='bilinear',align_corners=False)
+print('nearest values:',torch.unique(nearest).tolist())
+print('bilinear unique count:',len(torch.unique(bilinear)),'range:',(float(bilinear.min()),float(bilinear.max())))
+fig,ax=plt.subplots(1,2,figsize=(8,3)); ax[0].imshow(nearest[0,0]); ax[0].set_title('nearest: valid binary mask')
+ax[1].imshow(bilinear[0,0]); ax[1].set_title('bilinear: fractional labels')
+for a in ax:a.axis('off')
+plt.tight_layout(); plt.show()
+"""
+        ),
+        md(
+            """
+## A batch before it enters the network
+
+The image tensor is channel-first floating point and normalized with the same
+statistics used by the pretrained encoder. The target is not normalized. I
+check shapes and ranges at the DataLoader boundary because a silent HWC/CHW or
+0-255/0-1 mistake can make every later experiment meaningless.
+"""
+        ),
+        code(
+            """
+rng=np.random.default_rng(11)
+rgb=rng.integers(0,256,size=(H,W,3),dtype=np.uint8)
+image=torch.from_numpy(rgb).permute(2,0,1).float()/255
+mean=torch.tensor([.485,.456,.406])[:,None,None]; std=torch.tensor([.229,.224,.225])[:,None,None]
+normalized=(image-mean)/std
+batch_image=normalized.unsqueeze(0); batch_target=torch.from_numpy(target).unsqueeze(0)
+print('image',tuple(batch_image.shape),batch_image.dtype,'range',tuple(round(float(x),2) for x in (batch_image.min(),batch_image.max())))
+print('target',tuple(batch_target.shape),batch_target.dtype,'positive fractions',batch_target.mean((0,2,3)).tolist())
+"""
+        ),
+        md(
+            """
+## Threshold selection is part of validation
+
+The sigmoid converts logits to probabilities, but 0.5 is not automatically the
+best operating point for an imbalanced thin class. I sweep road and lane
+thresholds on validation only, freeze the pair, and reuse it unchanged for the
+sealed test. This tiny example shows the mechanism rather than reproducing the
+private validation predictions.
+"""
+        ),
+        code(
+            """
+y=np.array([0,0,0,0,1,1,1,1]); p=np.array([.05,.12,.33,.48,.31,.55,.67,.91])
+rows=[]
+for threshold in np.linspace(.1,.9,17):
+    pred=p>=threshold; tp=(pred & (y==1)).sum(); fp=(pred & (y==0)).sum(); fn=((~pred)&(y==1)).sum()
+    f1=2*tp/max(2*tp+fp+fn,1); rows.append((threshold,f1,tp,fp,fn))
+curve=pd.DataFrame(rows,columns=['threshold','F1','TP','FP','FN'])
+best=curve.iloc[curve.F1.argmax()]
+display(curve.round(3)); print('validation-selected threshold:',best.threshold)
+plt.figure(figsize=(7,3)); plt.plot(curve.threshold,curve.F1,'o-'); plt.axvline(best.threshold,color='red',ls='--'); plt.xlabel('threshold'); plt.ylabel('F1'); plt.show()
+"""
+        ),
+    ]
+
+
+def bev_lab_cells() -> list[Any]:
+    return [
+        md(
+            """
+## Validating and cropping a raw point cloud
+
+Each LiDAR return carries metric coordinates plus attributes such as intensity.
+Before rasterization I remove non-finite rows, transform into the ego frame,
+and crop to the declared region of interest. The crop is a modeling decision:
+it fixes the spatial resolution, maximum range, and what objects the detector
+can possibly represent.
+"""
+        ),
+        code(
+            """
+rng=np.random.default_rng(4)
+points=np.c_[rng.uniform(-15,55,5000),rng.uniform(-28,28,5000),rng.normal(-.5,1.0,5000),rng.uniform(0,1,5000)]
+points[5,0]=np.nan
+finite=np.isfinite(points).all(axis=1)
+roi=finite & (points[:,0]>=0) & (points[:,0]<50) & (np.abs(points[:,1])<25) & (points[:,2]>-3) & (points[:,2]<2)
+cropped=points[roi]
+fig,ax=plt.subplots(1,2,figsize=(11,4)); ax[0].scatter(points[finite,0],points[finite,1],s=1); ax[0].set_title('finite raw points')
+ax[1].scatter(cropped[:,0],cropped[:,1],s=1); ax[1].set_title('ego-frame region of interest')
+for a in ax: a.set(xlabel='forward x (m)',ylabel='left y (m)'); a.axis('equal')
+plt.tight_layout(); plt.show(); print(f'kept {len(cropped):,} / {len(points):,} returns')
+"""
+        ),
+        md(
+            r"""
+## Point-to-cell rasterization
+
+For bounds $[x_{min},x_{max})\times[y_{min},y_{max})$ and cell sizes
+$\Delta x,\Delta y$, metric coordinates become integer indices
+
+\[
+i=\left\lfloor\frac{x-x_{min}}{\Delta x}\right\rfloor,\qquad
+j=\left\lfloor\frac{y-y_{min}}{\Delta y}\right\rfloor.
+\]
+
+Within every cell I aggregate maximum height, maximum intensity, and a clipped
+log-density. These are three pseudo-image channels, not RGB.
+"""
+        ),
+        code(
+            """
+def simple_bev(pts,xlim=(0,50),ylim=(-25,25),shape=(200,200)):
+    h,w=shape; i=((pts[:,0]-xlim[0])/(xlim[1]-xlim[0])*h).astype(int); j=((pts[:,1]-ylim[0])/(ylim[1]-ylim[0])*w).astype(int)
+    ok=(i>=0)&(i<h)&(j>=0)&(j<w); i,j,p=i[ok],j[ok],pts[ok]
+    height=np.full((h,w),-3.0); intensity=np.zeros((h,w)); count=np.zeros((h,w))
+    np.maximum.at(height,(i,j),p[:,2]); np.maximum.at(intensity,(i,j),p[:,3]); np.add.at(count,(i,j),1)
+    height=np.clip((height+3)/5,0,1); density=np.minimum(1,np.log1p(count)/np.log(16))
+    return np.stack([intensity,height,density])
+bev=simple_bev(cropped)
+fig,ax=plt.subplots(1,3,figsize=(12,3));
+for a,img,title in zip(ax,bev,['max intensity','normalized max height','log density']): a.imshow(img.T,origin='lower'); a.set_title(title); a.axis('off')
+plt.tight_layout(); plt.show(); print('network tensor:',bev.shape)
+"""
+        ),
+        md(
+            r"""
+## Compensating a previous sweep
+
+To express a point from sweep $s$ in the current ego frame $c$, I compose the
+calibrations and ego poses:
+
+\[
+p^{ego_c}= (T^{world}_{ego_c})^{-1}T^{world}_{ego_s}
+T^{ego_s}_{lidar_s}p^{lidar_s}.
+\]
+
+This aligns static scenery. It does not undo the independent motion of a car or
+pedestrian, which is why several sweeps can create trails and validation—not
+intuition—must choose the sweep count.
+"""
+        ),
+        code(
+            """
+def transform_xy(points_xy,translation,yaw):
+    c,s=np.cos(yaw),np.sin(yaw); R=np.array([[c,-s],[s,c]])
+    return points_xy@R.T+np.asarray(translation)
+object_now=np.c_[np.linspace(15,19,80),np.linspace(-1,1,80)]
+static=np.c_[np.full(60,25),np.linspace(-12,12,60)]
+previous_sensor=np.vstack([transform_xy(static,[-1,0],0),transform_xy(object_now,[-2.3,0],0)])
+ego_compensated=transform_xy(previous_sensor,[1,0],0)
+fig,ax=plt.subplots(figsize=(8,4)); ax.scatter(*static.T,s=7,label='current static wall'); ax.scatter(*object_now.T,s=7,label='current moving object')
+ax.scatter(*ego_compensated.T,s=7,alpha=.55,label='previous sweep after ego compensation'); ax.axis('equal'); ax.legend(); ax.set_title('Static points align; the moving object remains smeared'); plt.show()
+"""
+        ),
+        md(
+            """
+## Center heatmaps and regression targets
+
+Center-based detectors place a Gaussian at each object center. Regression is
+supervised only at positive centers for offset, dimensions, height, and yaw.
+The focal heatmap loss handles the large number of background cells; a mask
+prevents empty cells from contributing meaningless box regression.
+"""
+        ),
+        code(
+            """
+size=64; yy,xx=np.mgrid[:size,:size]; centers=[(17,20,2.5),(43,39,4.0)]
+heat=np.zeros((size,size))
+for cy,cx,sigma in centers: heat=np.maximum(heat,np.exp(-((xx-cx)**2+(yy-cy)**2)/(2*sigma**2)))
+plt.figure(figsize=(5,4)); plt.imshow(heat,cmap='magma',origin='lower'); plt.colorbar(label='center target'); plt.scatter([20,39],[17,43],facecolors='none',edgecolors='cyan'); plt.title('Anchor-free heatmap target'); plt.show()
+positive=np.zeros_like(heat,bool); positive[[17,43],[20,39]]=True
+print('regression locations:',positive.sum(),'background locations ignored by box loss:',(~positive).sum())
+"""
+        ),
+    ]
+
+
 def project_map() -> Any:
     return notebook(
         "00 — Project map, claims, and evidence",
@@ -125,6 +697,7 @@ plt.show()
 """
             ),
             code(SETUP),
+            *project_workflow_cells(),
             code(
                 """
 dyn = summary["dynamics"]
@@ -292,6 +865,7 @@ def geometry() -> Any:
         "01 — Geometry, causal splits, and physics baselines",
         [
             code(SETUP),
+            *geometry_lab_cells(),
             md(
                 r"""
 ## Learning objectives and one supervised sample
@@ -504,6 +1078,7 @@ def neural_ode() -> Any:
         "02 — NeuralODE, RK4, and multiple shooting",
         [
             code(SETUP),
+            *ode_lab_cells(),
             md(
                 r"""
 ## Learning objectives and architecture
@@ -804,6 +1379,7 @@ def fourier() -> Any:
         "03 — Fourier operators and trajectory forecasting",
         [
             code(SETUP),
+            *fourier_lab_cells(),
             md(
                 r"""
 ## Learning objectives and input grid
@@ -1049,6 +1625,7 @@ def segmentation() -> Any:
         "04 — Road and lane segmentation",
         [
             code(SETUP),
+            *segmentation_lab_cells(),
             md(
                 r"""
 ## Learning objectives and sample contract
@@ -1344,6 +1921,7 @@ def bev_perception() -> Any:
         "05 — LiDAR BEV detection and temporal tracking",
         [
             code(SETUP),
+            *bev_lab_cells(),
             md(
                 """
 ## Learning objective and system boundary
@@ -1704,18 +2282,122 @@ Raw assets, IDs, caches, weights, and per-frame predictions remain private.
     )
 
 
-def capstone() -> Any:
+def synthesis_lab_cells() -> list[Any]:
+    return [
+        md(
+            """
+## Reconstructing one sample from start to finish
+
+I use this final notebook to reconnect details that are deliberately separated
+in the earlier notebooks. The table below is my checklist whenever I forget
+what a model output actually means. A tensor is not fully specified until I can
+name its units, frame, shape, and the inverse mapping used for visualization.
+"""
+        ),
+        code(
+            """
+sample_trace=pd.DataFrame([
+    ["trajectory", "asynchronous vehicle signals", "21x9 values + 21x9 mask", "30x2 anchor-local metres", "SE(2) back to camera/world"],
+    ["segmentation", "RGB + road/lane polygons", "3x288x512 normalized RGB", "2x288x512 logits", "sigmoid, frozen thresholds, resize"],
+    ["BEV", "LiDAR returns + calibration + camera", "3x608x608 BEV + RGB", "classed oriented metric boxes", "decode cells, project or draw in ego frame"],
+],columns=['track','raw unit','model input','model output','interpretation step'])
+sample_trace
+"""
+        ),
+        md(
+            """
+## The same learning loop across all three tracks
+
+The sensor geometry changes, but my experimental loop does not: validate one
+sample visually, test the transformation numerically, establish a simple
+baseline, change one modeling idea, select without touching test, and finally
+inspect aggregate and qualitative evidence together.
+"""
+        ),
+        code(
+            """
+steps=['inspect raw','validate transform','fit baseline','train candidate','select on validation','seal test','analyze slices']
+tracks=['trajectory','segmentation','BEV']
+progress=pd.DataFrame(1,index=tracks,columns=steps)
+fig,ax=plt.subplots(figsize=(12,2.6)); ax.imshow(progress,cmap='Blues',vmin=0,vmax=1.3)
+ax.set_xticks(range(len(steps)),steps,rotation=24,ha='right'); ax.set_yticks(range(len(tracks)),tracks)
+for y in range(len(tracks)):
+    for x in range(len(steps)): ax.text(x,y,'check',ha='center',va='center',fontsize=8)
+ax.set_title('Reusable project workflow'); plt.tight_layout(); plt.show()
+"""
+        ),
+        md(
+            """
+## What the comparisons changed in my understanding
+
+- A physical prior can improve structure without winning accuracy. Biased
+  measurements and unmodeled behavior still pass through exact equations.
+- Global Fourier mixing is useful for the fixed trajectory grid, but extra
+  Fourier capacity in a U-Net bottleneck did not justify its cost.
+- Thin structures need metrics that respect geometry as well as strict overlap.
+- Transfer learning mattered more than choosing a fashionable 3-D detector on
+  the bounded BEV cohort.
+- Camera semantics and LiDAR geometry are complementary, but fusion rules need
+  protected evaluation just like learned models.
+
+These are project-specific observations, not universal architecture rankings.
+"""
+        ),
+        code(
+            """
+learning_effects=pd.DataFrame([
+    ['Temporal FNO vs B2','ADE reduction (m)',0.131],
+    ['U-Net vs DeepLab','lane tolerant F1 increase',0.861-0.654],
+    ['BEV fusion vs LiDAR','cyclist AP increase',0.327-0.156],
+],columns=['comparison','quantity','improvement'])
+fig,ax=plt.subplots(figsize=(9,3.5)); ax.barh(learning_effects.comparison,learning_effects.improvement,color=['#2471a3','#229954','#af601a'])
+ax.set_xlabel("improvement in each metric's native units"); ax.set_title('Three measured lessons (axes are not directly comparable)')
+for i,v in enumerate(learning_effects.improvement): ax.text(v+.004,i,f'{v:.3f}',va='center')
+plt.tight_layout(); plt.show(); learning_effects
+"""
+        ),
+        md(
+            """
+## How I return to the implementation
+
+When revisiting the project I start with a notebook transformation, then locate
+the production implementation and its unit test. The notebook code is small and
+transparent; the package code handles batching, devices, serialization, and
+edge cases. Both are needed, but they serve different purposes.
+"""
+        ),
+        code(
+            """
+implementation_map=pd.DataFrame([
+    ['local trajectory geometry','src/zod_driveformer/dynamics/data.py','tests/test_dynamics_data.py'],
+    ['ODE/FNO models','src/zod_driveformer/dynamics/models.py','tests/test_dynamics_models.py'],
+    ['segmentation networks','src/zod_driveformer/segmentation/models.py','tests/test_models.py'],
+    ['BEV raster and boxes','src/zod_driveformer/bev/representation.py','tests/test_bev_representation.py'],
+    ['camera-LiDAR fusion','src/zod_driveformer/bev/fusion.py','tests/test_bev_fusion.py'],
+],columns=['concept','implementation','test'])
+implementation_map.assign(
+    implementation_exists=implementation_map.implementation.map(lambda p:(ROOT/p).exists()),
+    test_exists=implementation_map.test.map(lambda p:(ROOT/p).exists()),
+)
+"""
+        ),
+    ]
+
+
+def project_synthesis() -> Any:
     return notebook(
-        "06 — Failure analysis and interview capstone",
+        "06 — Project synthesis and learning review",
         [
             code(SETUP),
+            *synthesis_lab_cells(),
             md(
                 """
-## How to use this capstone
+## How I use this synthesis
 
-This notebook is a compact oral-exam pass over the project. Before reading each
-answer, I should explain the input, output, inductive bias, loss, selection rule,
-test unit, result, limitation, and next experiment in my own words.
+This is my return point after time away from the project. I follow each track
+from raw data to a physical output, restate why each transformation exists, and
+connect the measured result to its limitations. When a section feels unclear, I
+return to its dedicated notebook and run the worked examples there.
 
 ## The project in one diagram
 
@@ -1850,7 +2532,7 @@ fig.suptitle('Illustration only: a high-error slice may have little support'); p
             ),
             md(
                 r"""
-## Architecture and loss flash cards
+## Architecture and loss reference
 
 | Model | Inductive bias | Objective | Main limitation |
 |---|---|---|---|
@@ -1873,9 +2555,10 @@ validation, then its final claim uses sealed test metrics and grouped uncertaint
             ),
             md(
                 """
-## Interview drill
+## Rebuilding the reasoning in my own words
 
-Pause before expanding each answer.
+These questions test whether I still understand the implementation instead of
+only remembering the headline number.
 
 1. **Why is target-derived multiple shooting not test leakage?**  
    It is training-only intermediate supervision. `forward()` never accepts a
@@ -1929,11 +2612,11 @@ scorecard
             ),
             md(
                 """
-## Visual recall: architecture to output
+## Visual index: architecture to output
 
-These panels are the fastest way to rehearse the project aloud: name the input
-tensor, explain the model's inductive bias, point to its physical output, then
-connect the visible behavior back to the sealed quantitative result.
+These panels reconnect the abstract tensors to physical outputs. For each one I
+name the input tensor, explain the model's inductive bias, identify the output
+frame, and compare the visible behavior with the sealed quantitative result.
 """
             ),
             md(
@@ -1951,9 +2634,9 @@ connect the visible behavior back to the sealed quantitative result.
             ),
             code(
                 """
-# Data-safe repository completeness check used during a review.
+# Data-safe repository completeness check used when I revisit the project.
 required=[
-    'README.md','docs/methods.md','docs/data_and_evaluation.md','docs/interview_guide.md',
+    'README.md','docs/methods.md','docs/data_and_evaluation.md','docs/project_learning_review.md',
     'reports/v4_dynamics_test.json','reports/v4_segmentation_test.json',
     'reports/bev_protected_roles.json','reports/bev_v2_summary.json',
     'src/zod_driveformer/dynamics/models.py','src/zod_driveformer/segmentation/models.py',
@@ -1996,12 +2679,9 @@ def main() -> int:
         "03_fourier_operators.ipynb": fourier(),
         "04_road_lane_segmentation.ipynb": segmentation(),
         "05_lidar_bev_detection_and_tracking.ipynb": bev_perception(),
-        "06_interview_capstone.ipynb": capstone(),
+        "06_project_synthesis.ipynb": project_synthesis(),
     }
     args.output.mkdir(parents=True, exist_ok=True)
-    legacy_capstone = args.output / "05_interview_capstone.ipynb"
-    if legacy_capstone.exists():
-        legacy_capstone.unlink()
     root = Path.cwd()
     for filename, value in notebooks.items():
         if not args.no_execute:

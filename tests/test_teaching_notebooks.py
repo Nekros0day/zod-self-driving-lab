@@ -15,7 +15,7 @@ EXPECTED_CONCEPTS = {
     "03_fourier_operators.ipynb": ("Fourier transform", "causality", "CTRV"),
     "04_road_lane_segmentation.ipynb": ("multilabel", "U-Net", "tolerant"),
     "05_lidar_bev_detection_and_tracking.ipynb": ("bird's-eye", "oriented", "Kalman"),
-    "06_interview_capstone.ipynb": ("bootstrap", "failure", "promotion"),
+    "06_project_synthesis.ipynb": ("bootstrap", "learning", "promotion"),
 }
 
 
@@ -28,7 +28,7 @@ def test_complete_executed_notebook_sequence() -> None:
     for filename, concepts in EXPECTED_CONCEPTS.items():
         notebook = _load(NOTEBOOKS / filename)
         cells = notebook["cells"]
-        assert len(cells) >= 14, filename
+        assert len(cells) >= 20, filename
         markdown = "\n".join(
             "".join(cell["source"]) for cell in cells if cell["cell_type"] == "markdown"
         )
@@ -49,7 +49,7 @@ def test_complete_executed_notebook_sequence() -> None:
             for cell in code_cells
             for output in cell.get("outputs", [])
         )
-        assert image_outputs >= 2, filename
+        assert image_outputs >= 3, filename
 
 
 def test_notebooks_do_not_embed_private_locator_or_machine_paths() -> None:
