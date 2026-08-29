@@ -18,6 +18,11 @@ This notice applies to:
 - `bev_tracking.gif`
 - `bev_v2_fusion_comparison.png`
 - `bev_v2_fusion_comparison.gif`
+- `multitask_camera_inference.png`
+- `multitask_camera_inference.gif`
+- `multitask_camera_inference.mp4`
+- `multitask_federated_pipeline.png`
+- `multitask_federated_benchmark.png`
 
 Required ZOD notice:
 

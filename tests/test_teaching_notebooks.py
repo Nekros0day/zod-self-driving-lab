@@ -16,6 +16,7 @@ EXPECTED_CONCEPTS = {
     "04_road_lane_segmentation.ipynb": ("multilabel", "U-Net", "tolerant"),
     "05_lidar_bev_detection_and_tracking.ipynb": ("bird's-eye", "oriented", "Kalman"),
     "06_project_synthesis.ipynb": ("bootstrap", "learning", "promotion"),
+    "07_multitask_federated_perception.ipynb": ("FedSGD", "model delta", "privacy"),
 }
 
 

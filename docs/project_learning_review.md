@@ -6,7 +6,7 @@ records the conclusions those experiments changed or confirmed for me.
 
 ## What I built
 
-I developed three leakage-audited learning tracks on ZOD. For three-second ego
+I developed four leakage-audited learning tracks on ZOD. For three-second ego
 forecasting, temporal FNO reached 0.542 m ADE and 2.69 ms latency, narrowly
 ahead of two multiple-shooting NeuralODEs. For camera affordances, ResNet-18
 U-Net raised thin-lane tolerant F1 from 0.654 to 0.861; a much larger Fourier
@@ -15,6 +15,17 @@ from a 12-frame transfer diagnostic to protected 70/16/30 recording roles,
 fine-tuned SFA3D, tested PointPillars and CenterPoint controls, and fused camera
 semantics with calibrated LiDAR depth. The hybrid preserves vehicle AP@0.30 at
 0.616 and reaches pedestrian/cyclist AP of 0.529/0.327.
+
+The fourth track asks whether camera tasks and vehicle clients should share
+parameters. A split-decoder model shares one ResNet-18 encoder across semantic
+segmentation, road/lane affordances, sparse metric depth, and 2-D detection. It
+uses 19.80M parameters instead of 43.44M for three separate networks, while
+avoiding the lane collapse observed with a hard-shared decoder. Four uneven,
+non-IID collection-car clients then provide a controlled FedAvg/FedProx study.
+Local-optimizer deltas do not beat the centralized round-zero model, but
+gradient-only FedSGD selects round 7: validation rises from 0.3715 to 0.3765
+and the composite test score from 0.3392 to 0.3445. The gain is mostly sparse
+depth, while detection AP decreases slightly.
 
 ## Lessons I want to retain
 
@@ -74,6 +85,33 @@ and BEV geometry. Class-gated fusion leaves the vehicle branch unchanged while
 supplementing vulnerable-road-user proposals. The protected test improvement is
 bounded evidence, not a safety claim.
 
+### Sharing an encoder does not mean every spatial decoder should be shared
+
+The hard-shared camera model is efficient, but thin-lane F1 falls to zero and
+segmentation/depth encoder gradients conflict. Independent task decoders retain
+one shared encoder pass while giving dense semantics, depth, and center
+heatmaps different reconstruction paths. The result is a practical compromise,
+not a claim that it dominates each single-task specialist.
+
+### Federated aggregation needs a round-zero option
+
+Sample-weighted FedAvg correctly gives more influence to clients with more
+local samples, while uniform averaging overweights the smallest client.
+FedProx constrains local drift, but neither rule guarantees improvement under
+strong domain and label-availability shift. Selecting against the untouched
+central model prevents a fleet update from being promoted merely because it
+completed.
+
+### A gradient message and a locally optimized delta are different algorithms
+
+FedSGD evaluates every client's mean gradient at the same global checkpoint;
+FedAvg performs local optimizer steps before returning a model delta. Averaging
+complete client weights and averaging their deltas are algebraically equivalent
+when their starting checkpoint is shared. In this experiment the small global
+FedSGD steps improve validation while local AdamW deltas drift. Both messages
+remain model-sized and potentially information-bearing unless compression and
+privacy mechanisms are added.
+
 ## Boundaries of the project
 
 - The trajectory model forecasts ego motion; it does not navigate or react to
@@ -83,6 +121,10 @@ bounded evidence, not a safety claim.
 - Fourier U-Net is not established as better than ordinary U-Net.
 - The bounded BEV cohort is not a production-scale safety evaluation.
 - The qualitative Kalman animation demonstrates mechanics, not MOT quality.
+- Broad scene semantics are SegFormer teacher labels; their mIoU measures
+  distillation agreement rather than native ZOD ground-truth accuracy.
+- The federated experiment is a sequential single-machine simulation without
+  secure aggregation, differential privacy, or a privacy guarantee.
 
 ## Experiments I would run next
 
@@ -92,3 +134,5 @@ bounded evidence, not a safety claim.
 - benchmark a pretrained full-scale CenterPoint or BEVFusion model;
 - quantify geographic, weather, distance, and calibration shift;
 - evaluate tracking on a contiguous labeled MOT benchmark.
+- expand each federated client before comparing SCAFFOLD, FedBN, partial
+  participation, and privacy-preserving aggregation.

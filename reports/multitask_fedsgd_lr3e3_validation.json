@@ -1,0 +1,978 @@
+{
+  "base_test": null,
+  "base_validation": {
+    "affordance": {
+      "lane_accuracy": 0.9853709599743149,
+      "lane_dice": 0.33407423195201075,
+      "lane_iou": 0.20053368424900145,
+      "lane_precision": 0.22728277081146456,
+      "lane_recall": 0.6301642608262575,
+      "lane_tolerant_f1": 0.692347392192346,
+      "lane_tolerant_precision": 0.6728718996851257,
+      "lane_tolerant_recall": 0.7129838802312397,
+      "road_accuracy": 0.9680971746575341,
+      "road_dice": 0.87448729329455,
+      "road_iou": 0.7769679436621462,
+      "road_precision": 0.8315996870260959,
+      "road_recall": 0.9220390775724756,
+      "selection_score": 0.7346576679272461
+    },
+    "depth": {
+      "abs_rel": 0.4278444377878081,
+      "delta1": 0.5150906501219129,
+      "rmse_m": 13.196126240258359,
+      "valid_pixels": 207115
+    },
+    "detection_ap50": {
+      "Cyclist": 0.0,
+      "Pedestrian": 0.0011001100110011003,
+      "Vehicle": 0.06591013137233545
+    },
+    "detection_map50": 0.02233674712777885,
+    "loss": 2.9890168464347107,
+    "sample_count": 73,
+    "scene_teacher_class_iou": {
+      "bicycle": 0.0,
+      "building": 0.5622902899259545,
+      "bus": 0.0,
+      "car": 0.31923630959186006,
+      "fence": 0.0,
+      "motorcycle": 0.0,
+      "person": 0.0,
+      "pole": 0.0,
+      "rider": 0.0,
+      "road": 0.7960026902838426,
+      "sidewalk": 0.024567518591501875,
+      "sky": 0.9474495025440529,
+      "terrain": 0.44997032467722003,
+      "traffic light": 0.0,
+      "traffic sign": 0.0,
+      "train": 0.0,
+      "truck": 0.1779584030600048,
+      "vegetation": 0.7316391359593393,
+      "wall": 0.05707245767476424
+    },
+    "scene_teacher_miou": 0.21400982275308109,
+    "selection_score": 0.3715237219825047
+  },
+  "client_sample_counts": [
+    65,
+    40,
+    25,
+    15
+  ],
+  "learning_rate": 0.003,
+  "local_epochs": 1,
+  "methods": [
+    {
+      "best_round": 7,
+      "best_validation_score": 0.3765369517798933,
+      "communication": {
+        "compression": "none",
+        "downlink_bytes_total": 3802189248,
+        "model_bytes_fp32": 79212276,
+        "participating_clients_per_round": 4,
+        "raw_samples_centralized": false,
+        "transmitted_trainable_bytes": 79212276,
+        "transport": "mean_parameter_gradient",
+        "uplink_bytes_total": 3802189248
+      },
+      "history": [
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.7168447421147275,
+            3.742261791229248,
+            3.358511667251587,
+            4.419933891296386
+          ],
+          "gradient_l2": 6.234943454150156,
+          "round": 1,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.018704830362450468,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9849970569349313,
+              "lane_dice": 0.33098031417776563,
+              "lane_iou": 0.19830821468993626,
+              "lane_precision": 0.22353383559619913,
+              "lane_recall": 0.6373243481257175,
+              "lane_tolerant_f1": 0.6919083873587885,
+              "lane_tolerant_precision": 0.6661966345701802,
+              "lane_tolerant_recall": 0.7196844966879534,
+              "road_accuracy": 0.9678481289240866,
+              "road_dice": 0.8738738029578272,
+              "road_iou": 0.7759998881591607,
+              "road_precision": 0.828851443949282,
+              "road_recall": 0.9240682405473728,
+              "selection_score": 0.7339541377589746
+            },
+            "depth": {
+              "abs_rel": 0.42436252438636146,
+              "delta1": 0.5179344808439755,
+              "rmse_m": 13.243363921267823,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.0022502250225022503,
+              "Vehicle": 0.06352287565087204
+            },
+            "detection_map50": 0.02192436689112476,
+            "loss": 2.9236337256758183,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5623436541387373,
+              "bus": 0.0,
+              "car": 0.3197566118770125,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7967770506841391,
+              "sidewalk": 0.025447709508261602,
+              "sky": 0.9475296452797757,
+              "terrain": 0.45066291899066496,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.18075061112975124,
+              "vegetation": 0.7307405885445734,
+              "wall": 0.05802164847926538
+            },
+            "scene_teacher_miou": 0.21431739150695686,
+            "selection_score": 0.3720325942502579
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.690314747737004,
+            3.70748348236084,
+            3.535384006500244,
+            4.166663376490275
+          ],
+          "gradient_l2": 5.71466261070988,
+          "round": 2,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.01714398783212964,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.984659719249429,
+              "lane_dice": 0.3283777320070641,
+              "lane_iou": 0.19644254464337624,
+              "lane_precision": 0.22037051594476034,
+              "lane_recall": 0.6440249645824312,
+              "lane_tolerant_f1": 0.6911508504798768,
+              "lane_tolerant_precision": 0.6602206325498433,
+              "lane_tolerant_recall": 0.7251215683271155,
+              "road_accuracy": 0.9676059949343605,
+              "road_dice": 0.8732377162530126,
+              "road_iou": 0.7749972898889617,
+              "road_precision": 0.8264178798847979,
+              "road_recall": 0.9256812123925053,
+              "selection_score": 0.7330740701844192
+            },
+            "depth": {
+              "abs_rel": 0.4195952641987845,
+              "delta1": 0.5216184245467493,
+              "rmse_m": 13.309082449182501,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.0035360678925035354,
+              "Vehicle": 0.06762510719786739
+            },
+            "detection_map50": 0.02372039169679031,
+            "loss": 2.8932601654366272,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5619376650858873,
+              "bus": 0.0,
+              "car": 0.3197435453443546,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7966812456612336,
+              "sidewalk": 0.027225130890052355,
+              "sky": 0.9477352843637793,
+              "terrain": 0.4519154706746525,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.18500094750805382,
+              "vegetation": 0.7305883449415527,
+              "wall": 0.05694899598590892
+            },
+            "scene_teacher_miou": 0.21461982265555135,
+            "selection_score": 0.37325817727087757
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.6199542742509108,
+            3.544493579864502,
+            3.3469031143188475,
+            4.255795192718506
+          ],
+          "gradient_l2": 5.802788268847369,
+          "round": 3,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.017408364806542106,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9842891606021688,
+              "lane_dice": 0.32544203099721114,
+              "lane_iou": 0.19434503733006878,
+              "lane_precision": 0.21696620034718397,
+              "lane_recall": 0.6508404487498315,
+              "lane_tolerant_f1": 0.6907936395418409,
+              "lane_tolerant_precision": 0.6550725007658448,
+              "lane_tolerant_recall": 0.7306352184400685,
+              "road_accuracy": 0.9672599618293377,
+              "road_dice": 0.8722927778710267,
+              "road_iou": 0.7735099685042758,
+              "road_precision": 0.8231766969127926,
+              "road_recall": 0.9276419350482856,
+              "selection_score": 0.7321518040230584
+            },
+            "depth": {
+              "abs_rel": 0.40966240024789974,
+              "delta1": 0.5269439683267749,
+              "rmse_m": 13.387786605371208,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.004500450045004501,
+              "Vehicle": 0.06588761834150783
+            },
+            "detection_map50": 0.02346268946217078,
+            "loss": 2.9212218343395078,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5620607257298893,
+              "bus": 0.0,
+              "car": 0.31713553815203993,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7949909358211925,
+              "sidewalk": 0.0262708434115568,
+              "sky": 0.9478684082089578,
+              "terrain": 0.4535442372023307,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.1860333616058807,
+              "vegetation": 0.7314112618125568,
+              "wall": 0.052825571010573995
+            },
+            "scene_teacher_miou": 0.2143232043660515,
+            "selection_score": 0.3742204165445139
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.577691283592811,
+            3.492723274230957,
+            3.252853126525879,
+            4.142753012975057
+          ],
+          "gradient_l2": 4.069343962163596,
+          "round": 4,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.012208031886490788,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9841235017123285,
+              "lane_dice": 0.3240559679532177,
+              "lane_iou": 0.19335727312889886,
+              "lane_precision": 0.2154387913516488,
+              "lane_recall": 0.6535589845694125,
+              "lane_tolerant_f1": 0.6910241716837591,
+              "lane_tolerant_precision": 0.6529806005376736,
+              "lane_tolerant_recall": 0.7337749358655001,
+              "road_accuracy": 0.9671957495005705,
+              "road_dice": 0.8721712665757886,
+              "road_iou": 0.7733188920695263,
+              "road_precision": 0.8223266009593947,
+              "road_recall": 0.9284484209708519,
+              "selection_score": 0.7321715318766426
+            },
+            "depth": {
+              "abs_rel": 0.40485619590867394,
+              "delta1": 0.5287449001762305,
+              "rmse_m": 13.461650738503831,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.0075632563256325626,
+              "Vehicle": 0.06843766361074437
+            },
+            "detection_map50": 0.025333639978792313,
+            "loss": 2.883566438335262,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5616751345907759,
+              "bus": 0.0,
+              "car": 0.3171331559144719,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7948195241820359,
+              "sidewalk": 0.02693131036115578,
+              "sky": 0.9480068140774197,
+              "terrain": 0.454028709658152,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.18887117944871554,
+              "vegetation": 0.7313881476350363,
+              "wall": 0.05190121675896514
+            },
+            "scene_teacher_miou": 0.21446079961193307,
+            "selection_score": 0.37517771791089966
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.634862841092623,
+            3.4006155014038084,
+            3.2533885192871095,
+            4.094031906127929
+          ],
+          "gradient_l2": 5.008796530317759,
+          "round": 5,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.015026389590953277,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9839616331335614,
+              "lane_dice": 0.3227063874661012,
+              "lane_iou": 0.19239707648953988,
+              "lane_precision": 0.21396911013721623,
+              "lane_recall": 0.656162652678307,
+              "lane_tolerant_f1": 0.69064018429221,
+              "lane_tolerant_precision": 0.6507597607721135,
+              "lane_tolerant_recall": 0.735727686947171,
+              "road_accuracy": 0.967323728239155,
+              "road_dice": 0.8725995662246323,
+              "road_iou": 0.7739925762690419,
+              "road_precision": 0.8231334912127619,
+              "road_recall": 0.928391079081862,
+              "selection_score": 0.732316380280626
+            },
+            "depth": {
+              "abs_rel": 0.3993943511341827,
+              "delta1": 0.5321777756318953,
+              "rmse_m": 13.5269962170723,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.007700770077007701,
+              "Vehicle": 0.06827696237510122
+            },
+            "detection_map50": 0.02532591081736964,
+            "loss": 2.934076270012006,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5617597837281153,
+              "bus": 0.0,
+              "car": 0.31754720011011445,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7951500418157025,
+              "sidewalk": 0.026480719312271143,
+              "sky": 0.9480017151370402,
+              "terrain": 0.45341007279986495,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19122505001628437,
+              "vegetation": 0.7315123502201616,
+              "wall": 0.052164897556158975
+            },
+            "scene_teacher_miou": 0.21459220161556386,
+            "selection_score": 0.37610306708636365
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.5029598969679614,
+            3.4255297660827635,
+            3.2277183151245117,
+            3.0858410358428956
+          ],
+          "gradient_l2": 3.2014993059461587,
+          "round": 6,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.009604497917838477,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9835462596318492,
+              "lane_dice": 0.3190211222766629,
+              "lane_iou": 0.18978294522578099,
+              "lane_precision": 0.21015902348878798,
+              "lane_recall": 0.6618677489757375,
+              "lane_tolerant_f1": 0.6894467785463158,
+              "lane_tolerant_precision": 0.6439843408062947,
+              "lane_tolerant_recall": 0.7418156756135567,
+              "road_accuracy": 0.9669364476312783,
+              "road_dice": 0.871478070654387,
+              "road_iou": 0.7722296288559708,
+              "road_precision": 0.8198850340413374,
+              "road_recall": 0.9300003514502856,
+              "selection_score": 0.7308382037011433
+            },
+            "depth": {
+              "abs_rel": 0.3969691647378872,
+              "delta1": 0.5334138039253555,
+              "rmse_m": 13.588902308104673,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.007750775077507752,
+              "Vehicle": 0.06964553830841834
+            },
+            "detection_map50": 0.02579877112864203,
+            "loss": 2.9085967573401046,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5620047322167726,
+              "bus": 0.0,
+              "car": 0.31590781596299394,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7943468037566572,
+              "sidewalk": 0.02562482725944644,
+              "sky": 0.9480596464510225,
+              "terrain": 0.454746821202318,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19112356925951882,
+              "vegetation": 0.7316491316114925,
+              "wall": 0.050556533379607825
+            },
+            "scene_teacher_miou": 0.2144220990052542,
+            "selection_score": 0.37611821944009877
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.6176384999201847,
+            3.421561622619629,
+            3.1981968879699707,
+            3.0529271443684896
+          ],
+          "gradient_l2": 3.6625308994616605,
+          "round": 7,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.010987592698384983,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9833215164811642,
+              "lane_dice": 0.31731690622860764,
+              "lane_iou": 0.18857793686950658,
+              "lane_precision": 0.208308370677464,
+              "lane_recall": 0.6656583834283928,
+              "lane_tolerant_f1": 0.6885826057520451,
+              "lane_tolerant_precision": 0.6402262215725198,
+              "lane_tolerant_recall": 0.7448405253283017,
+              "road_accuracy": 0.9669774721746573,
+              "road_dice": 0.871651776042704,
+              "road_iou": 0.7725024576062902,
+              "road_precision": 0.81996827275647,
+              "road_recall": 0.9302889106335891,
+              "selection_score": 0.7305425316791676
+            },
+            "depth": {
+              "abs_rel": 0.3939021719327125,
+              "delta1": 0.5347125992805929,
+              "rmse_m": 13.683721977494878,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.010553380919487298,
+              "Vehicle": 0.06871905419411546
+            },
+            "detection_map50": 0.026424145037867584,
+            "loss": 2.9563035246444076,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5615657581300582,
+              "bus": 0.0,
+              "car": 0.31624127905641575,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7951759892487854,
+              "sidewalk": 0.025501647495215357,
+              "sky": 0.9481082786626618,
+              "terrain": 0.4534664054534914,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.1924928260668333,
+              "vegetation": 0.7307701244546285,
+              "wall": 0.05157978274887158
+            },
+            "scene_teacher_miou": 0.2144685311219453,
+            "selection_score": 0.3765369517798933
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.4956303963294397,
+            3.5442090034484863,
+            3.2770549201965333,
+            3.5581698576609293
+          ],
+          "gradient_l2": 3.6934229077494236,
+          "round": 8,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.011080268723248271,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9828582066923514,
+              "lane_dice": 0.3131582943977388,
+              "lane_iou": 0.18564770681071724,
+              "lane_precision": 0.20422978326730126,
+              "lane_recall": 0.6710954550675547,
+              "lane_tolerant_f1": 0.6858823572437398,
+              "lane_tolerant_precision": 0.6318573759030455,
+              "lane_tolerant_recall": 0.7500095723091952,
+              "road_accuracy": 0.9667957602026254,
+              "road_dice": 0.8711227572503989,
+              "road_iou": 0.7716718206920435,
+              "road_precision": 0.8184798516928466,
+              "road_recall": 0.9310029096384298,
+              "selection_score": 0.7287770889678917
+            },
+            "depth": {
+              "abs_rel": 0.3921773649489716,
+              "delta1": 0.5347753663423702,
+              "rmse_m": 13.776051391953555,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.00961085119500961,
+              "Vehicle": 0.06677637525067463
+            },
+            "detection_map50": 0.025462408815228082,
+            "loss": 2.918551255578864,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5611404371056853,
+              "bus": 0.0,
+              "car": 0.31628231492361925,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7958485605887098,
+              "sidewalk": 0.025282144793258094,
+              "sky": 0.9481659247843349,
+              "terrain": 0.4533409936802138,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19199669208857853,
+              "vegetation": 0.7299356230816889,
+              "wall": 0.051871766711226626
+            },
+            "scene_teacher_miou": 0.21441391882933236,
+            "selection_score": 0.3758571957387056
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.4624028352590708,
+            3.529770565032959,
+            3.450207691192627,
+            3.127928098042806
+          ],
+          "gradient_l2": 3.271942110352615,
+          "round": 9,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.009815826331057846,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9825712578481733,
+              "lane_dice": 0.31077959406795824,
+              "lane_iou": 0.18397811971522032,
+              "lane_precision": 0.20187626716761317,
+              "lane_recall": 0.674809511046419,
+              "lane_tolerant_f1": 0.6845506337320084,
+              "lane_tolerant_precision": 0.6266365791915255,
+              "lane_tolerant_recall": 0.7542596776045964,
+              "road_accuracy": 0.9666024543378994,
+              "road_dice": 0.8705674770024654,
+              "road_iou": 0.7708007864798893,
+              "road_precision": 0.8168777698680503,
+              "road_recall": 0.9318112452993506,
+              "selection_score": 0.7276757101059488
+            },
+            "depth": {
+              "abs_rel": 0.39218408864414095,
+              "delta1": 0.5354513193153562,
+              "rmse_m": 13.813393487562271,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.012376237623762377,
+              "Vehicle": 0.07264318996746856
+            },
+            "detection_map50": 0.028339809197076977,
+            "loss": 2.9812034842086166,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5606422028753208,
+              "bus": 0.0,
+              "car": 0.31643159671285287,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7957748348620098,
+              "sidewalk": 0.025570587424430396,
+              "sky": 0.9482016286028413,
+              "terrain": 0.4544411915612833,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19168140790130175,
+              "vegetation": 0.7298092243783076,
+              "wall": 0.05183551989807091
+            },
+            "scene_teacher_miou": 0.2144414839061273,
+            "selection_score": 0.37647708063112734
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.4129577489999625,
+            3.4683257579803466,
+            3.2101247787475584,
+            3.5766071637471515
+          ],
+          "gradient_l2": 2.9391834725174353,
+          "round": 10,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.008817550417552306,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9823012539240865,
+              "lane_dice": 0.30882288918492706,
+              "lane_iou": 0.18260824795345534,
+              "lane_precision": 0.19986025334715546,
+              "lane_recall": 0.6790213271049248,
+              "lane_tolerant_f1": 0.6845055167509716,
+              "lane_tolerant_precision": 0.6229094351530381,
+              "lane_tolerant_recall": 0.7596201707699675,
+              "road_accuracy": 0.966505466966324,
+              "road_dice": 0.8702997505747824,
+              "road_iou": 0.7703811263364629,
+              "road_precision": 0.8160305417666417,
+              "road_recall": 0.9323014259632957,
+              "selection_score": 0.7274433215437173
+            },
+            "depth": {
+              "abs_rel": 0.3910698129850868,
+              "delta1": 0.5350698887091713,
+              "rmse_m": 13.895780966800855,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.012439705509012439,
+              "Vehicle": 0.07138927173871186
+            },
+            "detection_map50": 0.0279429924159081,
+            "loss": 2.9665780198084164,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5600311267624211,
+              "bus": 0.0,
+              "car": 0.3164413689024671,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.795938987424982,
+              "sidewalk": 0.02601978054421099,
+              "sky": 0.9482807881908084,
+              "terrain": 0.4550803383519508,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19213563568041514,
+              "vegetation": 0.7297089345369252,
+              "wall": 0.05214969937583749
+            },
+            "scene_teacher_miou": 0.21451508735631675,
+            "selection_score": 0.37624282250627833
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.416381131685697,
+            3.3937522888183596,
+            3.219453811645508,
+            3.5252087910970054
+          ],
+          "gradient_l2": 3.625958398956315,
+          "round": 11,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.010877875196868945,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.98185511201484,
+              "lane_dice": 0.3058394036063366,
+              "lane_iou": 0.18052562682509132,
+              "lane_precision": 0.19674937720174057,
+              "lane_recall": 0.6864494390626532,
+              "lane_tolerant_f1": 0.6828802586180834,
+              "lane_tolerant_precision": 0.6160489898047583,
+              "lane_tolerant_recall": 0.7659761840946216,
+              "road_accuracy": 0.9659335759132418,
+              "road_dice": 0.868565569257872,
+              "road_iou": 0.7676676134808486,
+              "road_precision": 0.8118170898197224,
+              "road_recall": 0.9338441077509568,
+              "selection_score": 0.725273936049466
+            },
+            "depth": {
+              "abs_rel": 0.3909886759959745,
+              "delta1": 0.5385172488714,
+              "rmse_m": 13.817458099208958,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.012506513809275664,
+              "Vehicle": 0.07091187499784084
+            },
+            "detection_map50": 0.027806129602372165,
+            "loss": 2.9943872641210687,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5602720693445037,
+              "bus": 0.0,
+              "car": 0.3139211652860399,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7940957863278967,
+              "sidewalk": 0.023507051130544396,
+              "sky": 0.9483850012137707,
+              "terrain": 0.4573593701492689,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19248805122193163,
+              "vegetation": 0.7310106476694542,
+              "wall": 0.04882444827171867
+            },
+            "scene_teacher_miou": 0.21420334687448048,
+            "selection_score": 0.37645016534942966
+          }
+        },
+        {
+          "aggregation_weights": [
+            0.4482758620689655,
+            0.27586206896551724,
+            0.1724137931034483,
+            0.10344827586206896
+          ],
+          "client_losses": [
+            3.4829158269442044,
+            3.423588275909424,
+            3.0750190734863283,
+            3.4107646147410073
+          ],
+          "gradient_l2": 3.194302399107124,
+          "round": 12,
+          "transport": "mean_parameter_gradient",
+          "update_l2": 0.009582907197321373,
+          "validation": {
+            "affordance": {
+              "lane_accuracy": 0.9817529965753422,
+              "lane_dice": 0.3048382712693641,
+              "lane_iou": 0.17982842940751845,
+              "lane_precision": 0.1958716747988757,
+              "lane_recall": 0.6870620668529813,
+              "lane_tolerant_f1": 0.6819080864224804,
+              "lane_tolerant_precision": 0.614074729017251,
+              "lane_tolerant_recall": 0.7665888118849498,
+              "road_accuracy": 0.9661395904680363,
+              "road_dice": 0.8692091991401636,
+              "road_iou": 0.768673744497417,
+              "road_precision": 0.8132369648770805,
+              "road_recall": 0.9334556626965098,
+              "selection_score": 0.7252909154599487
+            },
+            "depth": {
+              "abs_rel": 0.3894262467220807,
+              "delta1": 0.5373295029331531,
+              "rmse_m": 13.891862688230535,
+              "valid_pixels": 207115
+            },
+            "detection_ap50": {
+              "Cyclist": 0.0,
+              "Pedestrian": 0.012376237623762377,
+              "Vehicle": 0.0684193267399278
+            },
+            "detection_map50": 0.026931854787896725,
+            "loss": 2.987053538021976,
+            "sample_count": 73,
+            "scene_teacher_class_iou": {
+              "bicycle": 0.0,
+              "building": 0.5601258773469858,
+              "bus": 0.0,
+              "car": 0.31490832151453135,
+              "fence": 0.0,
+              "motorcycle": 0.0,
+              "person": 0.0,
+              "pole": 0.0,
+              "rider": 0.0,
+              "road": 0.7955450212865689,
+              "sidewalk": 0.023564645151121093,
+              "sky": 0.9483580273080947,
+              "terrain": 0.45497113242714915,
+              "traffic light": 0.0,
+              "traffic sign": 0.0,
+              "train": 0.0,
+              "truck": 0.19306332512866414,
+              "vegetation": 0.7298320363705382,
+              "wall": 0.051241312808829334
+            },
+            "scene_teacher_miou": 0.2142952473338149,
+            "selection_score": 0.37596188012870335
+          }
+        }
+      ],
+      "method": "fedsgd",
+      "test": null,
+      "training_seconds": 58.827104300005885
+    }
+  ],
+  "privacy_boundary": {
+    "differential_privacy": false,
+    "model_updates_visible_to_simulated_server": true,
+    "pooled_control_centralizes_raw_samples": "conceptually yes; it is a non-federated oracle",
+    "raw_samples_shared_by_federated_methods": false,
+    "secure_aggregation": false,
+    "simulation": "sequential clients on one workstation"
+  },
+  "proximal_mu": 0.001,
+  "rounds": 12,
+  "schema": "zod-camera-multitask-federated-benchmark-v1",
+  "seed": 20260829,
+  "source_variant": "split_equal",
+  "status": "complete",
+  "test_policy": "not read; validation-only schedule exploration"
+}

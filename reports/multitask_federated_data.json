@@ -1,0 +1,136 @@
+{
+  "federated_contract": {
+    "client_identity": "one private ZOD collection car per simulated edge client",
+    "clients": 4,
+    "differential_privacy": false,
+    "raw_data_transmitted": false,
+    "sample_weighted_aggregation": true,
+    "secure_aggregation": false,
+    "simulation_note": "all client optimization runs sequentially on one workstation",
+    "uneven_target_counts": [
+      65,
+      40,
+      25,
+      15
+    ]
+  },
+  "label_contract": {
+    "affordances": "native ZOD ego-road and lane polygons",
+    "detection": "native ZOD 2-D Vehicle/Pedestrian/VulnerableVehicle boxes",
+    "metric_depth": "sparse calibrated ZOD LiDAR projected into the front camera",
+    "scene_semantics": "SegFormer-B0 Cityscapes teacher pseudo-labels"
+  },
+  "privacy": {
+    "paths_persisted": false,
+    "private_assignment_sha256": "484272ae62c7007de69dff5b616732fb9826aed9201bcfcd46148cb13acd1587",
+    "raw_identifiers_persisted": false
+  },
+  "roles": {
+    "central": {
+      "country_counts": {
+        "BE": 1,
+        "DE": 55,
+        "DK": 1,
+        "FR": 27,
+        "NL": 2,
+        "SE": 134
+      },
+      "depth_supervised_samples": 54,
+      "object_instances": {
+        "Cyclist": 131,
+        "Pedestrian": 431,
+        "Vehicle": 3125
+      },
+      "samples": 220
+    },
+    "federated/client_0": {
+      "country_counts": {
+        "SE": 65
+      },
+      "depth_supervised_samples": 22,
+      "object_instances": {
+        "Cyclist": 32,
+        "Pedestrian": 88,
+        "Vehicle": 973
+      },
+      "samples": 65
+    },
+    "federated/client_1": {
+      "country_counts": {
+        "DE": 1,
+        "SE": 39
+      },
+      "depth_supervised_samples": 11,
+      "object_instances": {
+        "Cyclist": 25,
+        "Pedestrian": 72,
+        "Vehicle": 575
+      },
+      "samples": 40
+    },
+    "federated/client_2": {
+      "country_counts": {
+        "BE": 1,
+        "FR": 8,
+        "SE": 16
+      },
+      "depth_supervised_samples": 6,
+      "object_instances": {
+        "Cyclist": 4,
+        "Pedestrian": 26,
+        "Vehicle": 477
+      },
+      "samples": 25
+    },
+    "federated/client_3": {
+      "country_counts": {
+        "DE": 6,
+        "FR": 4,
+        "SE": 5
+      },
+      "depth_supervised_samples": 2,
+      "object_instances": {
+        "Cyclist": 3,
+        "Pedestrian": 19,
+        "Vehicle": 183
+      },
+      "samples": 15
+    },
+    "test": {
+      "country_counts": {
+        "DE": 9,
+        "FR": 5,
+        "SE": 37
+      },
+      "depth_supervised_samples": 15,
+      "object_instances": {
+        "Cyclist": 24,
+        "Pedestrian": 45,
+        "Vehicle": 606
+      },
+      "samples": 51
+    },
+    "validation": {
+      "country_counts": {
+        "DE": 13,
+        "FR": 8,
+        "SE": 52
+      },
+      "depth_supervised_samples": 11,
+      "object_instances": {
+        "Cyclist": 14,
+        "Pedestrian": 42,
+        "Vehicle": 1232
+      },
+      "samples": 73
+    }
+  },
+  "sample_count": 489,
+  "schema": "zod-camera-multitask-federated-data-v1",
+  "seed": 20260829,
+  "source_role_policy": {
+    "central_and_federated": "deterministic partition of the previous training role",
+    "test": "preserved project test role; not newly untouched for road/lane",
+    "validation": "preserved previous validation role"
+  }
+}

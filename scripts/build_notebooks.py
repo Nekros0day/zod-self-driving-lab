@@ -8,6 +8,7 @@ from typing import Any
 
 import _bootstrap  # noqa: F401
 import nbformat as nbf
+from _multitask_notebook import build_multitask_notebook
 from nbclient import NotebookClient
 
 
@@ -85,6 +86,7 @@ study_map = pd.DataFrame([
     ["trajectory", "state history", "src/zod_driveformer/dynamics", "reports/v4_dynamics_test.json"],
     ["segmentation", "front RGB + polygons", "src/zod_driveformer/segmentation", "reports/v4_segmentation_test.json"],
     ["BEV perception", "LiDAR + camera + boxes", "src/zod_driveformer/bev", "reports/bev_v2_summary.json"],
+    ["multi-task + federated", "front RGB + local labels", "src/zod_driveformer/multitask", "reports/multitask_fedsgd_test.json"],
 ], columns=["track", "private input", "implementation", "public evidence"])
 study_map.assign(
     implementation_exists=study_map.implementation.map(lambda p: (ROOT/p).exists()),
@@ -107,6 +109,7 @@ ledger = pd.DataFrame([
     ["Temporal FNO", "21x9 state + mask", "30x2 path", "recording", "trajectory displacement", "validation ADE", "test ADE/FDE + latency"],
     ["ResNet-18 U-Net", "3x288x512 RGB", "2x288x512 masks", "recording", "weighted BCE", "road/lane score", "IoU + tolerant lane F1"],
     ["Hybrid BEV", "BEV raster + camera", "oriented boxes", "recording", "focal + masked regression", "validation AP", "test AP + box errors"],
+    ["Split multi-task", "3x192x320 RGB", "semantics + depth + centers", "collection car", "equal multi-task loss", "round-aware validation", "task metrics + communication"],
 ], columns=["model", "input", "target", "split", "training loss", "selection", "final evidence"])
 ledger
 """
@@ -115,16 +118,16 @@ ledger
             """
 # The same experiment stages apply even though the physical outputs differ.
 stages=['raw data','validated sample','model tensor','prediction','sealed metric']
-fig,ax=plt.subplots(figsize=(11,3.2)); ax.set_xlim(-.3,4.3); ax.set_ylim(-.6,2.6); ax.axis('off')
-colors=['#2874a6','#239b56','#ca6f1e']
-for row,(track,color) in enumerate(zip(['trajectory','segmentation','BEV'],colors)):
-    y=2-row
+fig,ax=plt.subplots(figsize=(11,4.2)); ax.set_xlim(-.3,4.3); ax.set_ylim(-.6,3.6); ax.axis('off')
+colors=['#2874a6','#239b56','#ca6f1e','#7d3c98']
+for row,(track,color) in enumerate(zip(['trajectory','segmentation','BEV','multi-task / FL'],colors)):
+    y=3-row
     for x,label in enumerate(stages):
         ax.scatter(x,y,s=700,color=color,alpha=.18,edgecolor=color)
         ax.text(x,y,label if row==0 else str(x+1),ha='center',va='center',fontsize=8)
         if x<4: ax.annotate('',(x+1-.13,y),(x+.13,y),arrowprops={'arrowstyle':'->','color':color})
     ax.text(-.3,y,track,ha='right',va='center',weight='bold',color=color)
-ax.set_title('A shared scientific workflow across three different sensor tasks')
+ax.set_title('A shared scientific workflow across four perception and forecasting studies')
 plt.show()
 """
         ),
@@ -635,11 +638,13 @@ def project_map() -> Any:
                 """
 ## What I am trying to learn
 
-This project has three deliberately separated learning tracks. The dynamics track
+This project has four deliberately separated learning tracks. The dynamics track
 maps **causal vehicle state history → future ego path**. The segmentation track
 maps **one front-camera image → overlapping road and lane masks**. The BEV track
 maps **calibrated LiDAR plus camera evidence → oriented dynamic-object footprints
-and temporal tracks**. Keeping the targets separate prevents an unsupported
+and temporal tracks**. The multi-task track maps **one front image to scene
+semantics, native affordances, metric depth, and object centers**, then simulates
+fine-tuning across uneven collection-car clients. Keeping the targets separate prevents an unsupported
 claim that one perception output already improves trajectory prediction.
 
 The scientific hierarchy is:
@@ -655,13 +660,14 @@ The scientific hierarchy is:
                 r"""
 ## End-to-end map and tensor contracts
 
-The three tracks share an experimental method, not a learned feature path.
+The four tracks share an experimental method, not a learned feature path.
 
 | Track | Input | Shape | Output | Shape |
 |---|---|---:|---|---:|
 | Dynamics | normalized state values + validity mask | $B\times21\times9$ each | anchor-local $(x,y)$ future | $B\times30\times2$ |
 | Segmentation | RGB front image | $B\times3\times288\times512$ | road/lane logits | $B\times2\times288\times512$ |
 | BEV perception | BEV raster + front image | $B\times3\times608\times608$ + RGB | class, center, size, yaw | variable detections |
+| Multi-task camera | RGB front image | $B\times3\times192\times320$ | semantics, affordances, depth, centers | dense maps at strides 1 and 4 |
 
 The history covers $[-2,0]$ s at 10 Hz and the trajectory target covers
 $(0,3]$ s. The two segmentation channels are independent because a lane
@@ -711,11 +717,13 @@ print("Public evidence status:", summary["status"])
                 """
 ## What the frozen models actually produce
 
-The first panel projects trajectory cases onto their calibrated front-camera
-frames. Learned curves average the three frozen seeds, while the camera remains
-context rather than model input. The second panel fixes seed 2026 and places
-segmentation targets beside all three model outputs. Together they connect the
-tensor contracts above to outputs I can inspect.
+The first panel projects trajectory cases onto calibrated front-camera frames.
+Learned curves average the three frozen seeds, while the camera remains context
+rather than model input. The second panel fixes seed 2026 and places
+segmentation targets beside all three model outputs. The final gallery shows how
+one multi-task RGB input becomes semantics, road/lane contours, sparse metric
+depth, and object centers. Together they connect tensor contracts to outputs I
+can inspect.
 """
             ),
             md(
@@ -723,6 +731,8 @@ tensor contracts above to outputs I can inspect.
 ![Held-out camera trajectories](../reports/figures/dynamics_camera_predictions.png)
 
 ![Held-out segmentation outputs](../reports/figures/segmentation_model_comparison.png)
+
+![Multi-task camera outputs](../reports/figures/multitask_camera_inference.png)
 """
             ),
             md(
@@ -848,7 +858,7 @@ for filename in ("v4_dynamics_test.json", "v4_segmentation_test.json"):
 1. Why would averaging predictions across seeds be a different estimator from
    averaging each seed's ADE?  
 2. Which test examples may influence threshold choice?  
-3. Why can the three tracks be presented in one project without claiming an
+3. Why can the four tracks be presented in one project without claiming an
    end-to-end driving system?
 
 Answers: ensembling changes predictions before a nonlinear metric; no test
@@ -2300,13 +2310,14 @@ sample_trace=pd.DataFrame([
     ["trajectory", "asynchronous vehicle signals", "21x9 values + 21x9 mask", "30x2 anchor-local metres", "SE(2) back to camera/world"],
     ["segmentation", "RGB + road/lane polygons", "3x288x512 normalized RGB", "2x288x512 logits", "sigmoid, frozen thresholds, resize"],
     ["BEV", "LiDAR returns + calibration + camera", "3x608x608 BEV + RGB", "classed oriented metric boxes", "decode cells, project or draw in ego frame"],
+    ["multi-task + FL", "RGB + teacher/native labels", "3x192x320 normalized RGB", "semantics + depth + centers", "decode each head; aggregate selected client updates"],
 ],columns=['track','raw unit','model input','model output','interpretation step'])
 sample_trace
 """
         ),
         md(
             """
-## The same learning loop across all three tracks
+## The same learning loop across all four tracks
 
 The sensor geometry changes, but my experimental loop does not: validate one
 sample visually, test the transformation numerically, establish a simple
@@ -2317,7 +2328,7 @@ inspect aggregate and qualitative evidence together.
         code(
             """
 steps=['inspect raw','validate transform','fit baseline','train candidate','select on validation','seal test','analyze slices']
-tracks=['trajectory','segmentation','BEV']
+tracks=['trajectory','segmentation','BEV','multi-task / FL']
 progress=pd.DataFrame(1,index=tracks,columns=steps)
 fig,ax=plt.subplots(figsize=(12,2.6)); ax.imshow(progress,cmap='Blues',vmin=0,vmax=1.3)
 ax.set_xticks(range(len(steps)),steps,rotation=24,ha='right'); ax.set_yticks(range(len(tracks)),tracks)
@@ -2339,6 +2350,9 @@ ax.set_title('Reusable project workflow'); plt.tight_layout(); plt.show()
   the bounded BEV cohort.
 - Camera semantics and LiDAR geometry are complementary, but fusion rules need
   protected evaluation just like learned models.
+- Parameter sharing is useful only while every task remains healthy; a shared
+  encoder with separate spatial decoders worked better than one shared decoder.
+- A federated round must beat the unmodified round-zero model before deployment.
 
 These are project-specific observations, not universal architecture rankings.
 """
@@ -2349,9 +2363,10 @@ learning_effects=pd.DataFrame([
     ['Temporal FNO vs B2','ADE reduction (m)',0.131],
     ['U-Net vs DeepLab','lane tolerant F1 increase',0.861-0.654],
     ['BEV fusion vs LiDAR','cyclist AP increase',0.327-0.156],
+    ['Split vs 3 specialists','parameter fraction removed',1-19.803069/(3*14.479741)],
 ],columns=['comparison','quantity','improvement'])
-fig,ax=plt.subplots(figsize=(9,3.5)); ax.barh(learning_effects.comparison,learning_effects.improvement,color=['#2471a3','#229954','#af601a'])
-ax.set_xlabel("improvement in each metric's native units"); ax.set_title('Three measured lessons (axes are not directly comparable)')
+fig,ax=plt.subplots(figsize=(9,4.0)); ax.barh(learning_effects.comparison,learning_effects.improvement,color=['#2471a3','#229954','#af601a','#7d3c98'])
+ax.set_xlabel("improvement in each metric's native units"); ax.set_title('Four measured lessons (axes are not directly comparable)')
 for i,v in enumerate(learning_effects.improvement): ax.text(v+.004,i,f'{v:.3f}',va='center')
 plt.tight_layout(); plt.show(); learning_effects
 """
@@ -2374,6 +2389,8 @@ implementation_map=pd.DataFrame([
     ['segmentation networks','src/zod_driveformer/segmentation/models.py','tests/test_models.py'],
     ['BEV raster and boxes','src/zod_driveformer/bev/representation.py','tests/test_bev_representation.py'],
     ['camera-LiDAR fusion','src/zod_driveformer/bev/fusion.py','tests/test_bev_fusion.py'],
+    ['multi-task losses and metrics','src/zod_driveformer/multitask/losses.py','tests/test_multitask_federated.py'],
+    ['federated aggregation','src/zod_driveformer/multitask/federated.py','tests/test_multitask_federated.py'],
 ],columns=['concept','implementation','test'])
 implementation_map.assign(
     implementation_exists=implementation_map.implementation.map(lambda p:(ROOT/p).exists()),
@@ -2457,6 +2474,8 @@ positive favors the candidate.
 | Does ZOD fine-tuning repair transfer? | Protected 70/16/30 roles | Yes, for all three classes |
 | Does camera fusion help rare users? | Sealed AP, vehicle pass-through | Yes, especially Cyclist |
 | Do five detector sweeps help? | Validation sweep comparison | No; moving trails hurt |
+| Can camera tasks share computation? | Single, hard-shared, split-decoder controls | Yes, with task-specific decoders |
+| Does federated tuning improve the split model? | Delta and gradient protocols | FedSGD yes; local FedAvg no |
 """
             ),
             code(
@@ -2510,6 +2529,14 @@ plt.tight_layout(); plt.show()
 - country-specific markings absent from the small test role;
 - threshold drift under camera exposure changes.
 
+### Multi-task and federated camera perception
+
+- semantic classes inherited from a Cityscapes teacher rather than native ZOD labels;
+- sparse depth coverage that differs by collection car;
+- negative transfer between dense semantics, depth, and center detection;
+- local drift from uneven client size and domain composition;
+- communication cost and update leakage in a real federated deployment.
+
 For each slice I would report support, the same frozen metric, a paired model
 difference where possible, and representative *private* examples outside Git.
 Slicing after seeing test results is exploratory diagnosis, not a new confirmatory
@@ -2548,6 +2575,10 @@ fig.suptitle('Illustration only: a high-error slice may have little support'); p
 | CenterPoint | learned pillars + anchor-free centers | focal + masked box regression | from-scratch overfit here |
 | Camera-LiDAR fusion | semantic boxes + metric depth | detector losses; rule-based association | sparse projected depth |
 | Kalman tracker | constant-velocity Gaussian state | recursive filtering, no learned loss | simple nearest-neighbor association |
+| Hard-shared camera model | one encoder and decoder, three heads | equal or uncertainty-weighted loss | thin-lane collapse here |
+| Split-decoder camera model | one encoder, task-specific decoders | equal multi-task loss | not best on every specialist metric |
+| FedAvg / FedProx | sample-weighted model-delta aggregation | local multi-task loss (+ proximal term) | no updated round beats round zero |
+| FedSGD | sample-weighted mean gradients | one server gradient step per round | round 7 improves the composite score |
 
 Promotion is not determined by training loss. The chosen checkpoint is judged by
 validation, then its final claim uses sealed test metrics and grouped uncertainty.
@@ -2592,6 +2623,14 @@ only remembering the headline number.
 8. **Is the BEV animation evidence of a good pedestrian detector?**
    No. The quantitative sealed test supports the bounded detector claim; a GIF
    only explains geometry and fusion. It is not a safety or MOT benchmark.
+
+9. **Why is teacher mIoU not ZOD semantic accuracy?**
+   The 19-class target is generated by a frozen Cityscapes SegFormer. Agreement
+   measures distillation fidelity; road/lane and object metrics use native ZOD.
+
+10. **Why can round zero win a federated experiment?**
+    A fleet update is optional. Every updated checkpoint is compared with the
+    untouched centralized model under the same frozen validation score.
 """
             ),
             code(
@@ -2606,6 +2645,9 @@ scorecard = pd.DataFrame([
     ["Fine-tuned SFA3D", True, True, "promote LiDAR branch"],
     ["Hybrid BEV fusion", True, True, "promote"],
     ["PointPillars / CenterPoint", False, False, "retain as small-data controls"],
+    ["Split-decoder multi-task", True, True, "promote central model"],
+    ["Local FedAvg / FedProx", False, False, "retain round zero"],
+    ["Gradient-only FedSGD", True, True, "promote round 7"],
 ], columns=["model","reliable_gain","efficient_frontier","decision"])
 scorecard
 """
@@ -2630,6 +2672,10 @@ frame, and compare the visible behavior with the sealed quantitative result.
 ![LiDAR-camera BEV fusion](../reports/figures/bev_v2_fusion_comparison.png)
 
 ![BEV AP benchmark](../reports/figures/bev_v2_test_ap.png)
+
+![Multi-task camera outputs](../reports/figures/multitask_camera_inference.png)
+
+![Federated benchmark](../reports/figures/multitask_federated_benchmark.png)
 """
             ),
             code(
@@ -2639,9 +2685,11 @@ required=[
     'README.md','docs/methods.md','docs/data_and_evaluation.md','docs/project_learning_review.md',
     'reports/v4_dynamics_test.json','reports/v4_segmentation_test.json',
     'reports/bev_protected_roles.json','reports/bev_v2_summary.json',
+    'reports/multitask_central_test.json','reports/multitask_fedsgd_test.json',
     'src/zod_driveformer/dynamics/models.py','src/zod_driveformer/segmentation/models.py',
     'src/zod_driveformer/bev/representation.py','src/zod_driveformer/bev/fusion.py',
     'src/zod_driveformer/bev/pillars.py','src/zod_driveformer/bev/tracking.py',
+    'src/zod_driveformer/multitask/models.py','src/zod_driveformer/multitask/federated.py',
 ]
 pd.DataFrame([(name,(ROOT/name).exists()) for name in required],columns=['artifact','present'])
 """
@@ -2661,6 +2709,9 @@ skips reliably repair thin-lane segmentation; extra Fourier capacity in the
 U-Net bottleneck does not justify its cost; protected ZOD fine-tuning repairs
 LiDAR transfer; class-gated camera fusion preserves vehicle geometry while
 materially improving cyclist AP.**
+The fourth track adds that **a shared camera encoder needs task-specific spatial
+decoders here; local-optimizer FedAvg drifts, while sample-weighted FedSGD earns
+a small round-7 composite improvement over the centralized checkpoint.**
 """
             ),
         ],
@@ -2680,6 +2731,9 @@ def main() -> int:
         "04_road_lane_segmentation.ipynb": segmentation(),
         "05_lidar_bev_detection_and_tracking.ipynb": bev_perception(),
         "06_project_synthesis.ipynb": project_synthesis(),
+        "07_multitask_federated_perception.ipynb": build_multitask_notebook(
+            md=md, code=code, notebook=notebook, setup=SETUP
+        ),
     }
     args.output.mkdir(parents=True, exist_ok=True)
     root = Path.cwd()

@@ -15,6 +15,11 @@
 - **Retain PointPillars, CenterPoint, and five-sweep detector input as negative
   controls.** They show that architecture names and extra points do not replace
   transfer learning or correct temporal treatment on a small cohort.
+- **Promote the split-decoder camera model and its round-7 FedSGD update.**
+  Shared encoding reduces the three-network parameter total by about 54% while
+  task-specific decoders avoid the hard-shared lane collapse. Local-optimizer
+  deltas drift below round zero; sample-weighted mean gradients improve the
+  registered composite score.
 
 ## Dynamics
 
@@ -91,12 +96,62 @@ Static structure aligns while moving objects leave trails. The promoted design
 therefore uses one sweep for detection and five sweeps only inside the
 foreground-depth estimator.
 
+## Multi-task camera perception and federated learning
+
+The camera study uses 220 centralized examples, four non-IID collection-car
+clients with 65/40/25/15 examples, 73 validation examples, and 51 test examples.
+Scene semantics are SegFormer Cityscapes pseudo-labels; road/lane, sparse depth,
+and 2-D boxes use native ZOD geometry.
+
+| Frozen model | Params | Teacher mIoU | Lane tolerant F1 | Depth δ1 | 2-D mAP50 |
+|---|---:|---:|---:|---:|---:|
+| Single segmentation | 14.48M | **0.228** | 0.630 | — | — |
+| Single depth | 14.48M | — | — | 0.354 | — |
+| Single detection | 14.48M | — | — | — | **0.034** |
+| Hard-shared, equal | **14.48M** | 0.187 | 0.000 | **0.387** | 0.029 |
+| **Split decoder, equal** | **19.80M** | 0.225 | **0.705** | 0.358 | 0.025 |
+| Split decoder, uncertainty | 19.80M | 0.228 | 0.713 | 0.409 | 0.046 |
+
+The uncertainty model has stronger raw test values but was not selected: equal
+weighting had the higher frozen validation score. The selected split-equal
+model is the defensible one-pass compromise. It is 4.7 ms at batch one versus
+about 9.1 ms for the three separate controls in sequence.
+
+Sample-weighted FedAvg uses client weights 0.448/0.276/0.172/0.103. Uniform
+averaging, FedProx (μ=0.001), pooled fine-tuning, and encoder-frozen FedAvg are
+controls. At the low-drift learning rate every local-optimizer method selects
+round zero; the centralized validation score is 0.372 and their best updated
+score is 0.367.
+
+FedSGD transmits each client's mean parameter gradient evaluated at the same
+global checkpoint. A validation-only server-rate sweep selects η=0.003 and
+round 7, increasing validation from 0.3715 to 0.3765. Frozen test results are:
+
+| FedSGD selection | Composite score | Teacher mIoU | Lane tolerant F1 | Depth δ1 | 2-D mAP50 |
+|---|---:|---:|---:|---:|---:|
+| Round 0 | 0.3392 | 0.2252 | 0.7053 | 0.3586 | 0.0252 |
+| **Round 7** | **0.3445** | 0.2254 | 0.7044 | **0.3824** | 0.0232 |
+
+The registered composite rule promotes round 7, but the per-task table makes
+the trade explicit. Dense FP32 gradients and model deltas both contain about
+75.5 MiB per full-model client; neither message is compressed or private by
+construction.
+
+![Camera multi-task inference](figures/multitask_camera_inference.gif)
+
+![Multi-task and federated benchmark](figures/multitask_federated_benchmark.png)
+
 ## Evidence files
 
 - `v4_dynamics_test.json`: seed metrics, grouped intervals, latency, and hashes.
 - `v4_segmentation_test.json`: thresholds, metrics, paired improvements, and hashes.
 - `bev_protected_roles.json`: privacy-preserving role counts and ID-set hashes.
 - `bev_v2_summary.json`: consolidated aggregate BEV metrics and selection record.
+- `multitask_federated_data.json`: uneven client and task-label coverage without IDs.
+- `multitask_central_test.json`: single, hard-shared, and split-decoder benchmark.
+- `multitask_federated_test.json`: round-zero-aware federated selection and communication.
+- `multitask_fedsgd_lr*_validation.json`: server-rate selection without test reads.
+- `multitask_fedsgd_test.json`: validation-selected gradient-only update and frozen test result.
 - `benchmark_summary.json`: consolidated dynamics/segmentation learning curves.
 - `figures/`: aggregate plots and attributed qualitative ZOD derivatives.
 
