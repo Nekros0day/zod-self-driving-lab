@@ -4,7 +4,7 @@
 
 I built this as a personal learning project to explore how deep learning,
 geometry, and physics-based models can solve practical self-driving problems
-with the Zenseact Open Dataset (ZOD). I focus on three questions:
+with the Zenseact Open Dataset (ZOD). I focus on four questions:
 
 1. Can continuous-time or operator-learning models forecast three seconds of
    ego motion better than a strong state MLP?
@@ -12,6 +12,8 @@ with the Zenseact Open Dataset (ZOD). I focus on three questions:
    markings from a front-camera keyframe?
 3. Can ZOD fine-tuning and calibrated camera–LiDAR fusion produce a useful
    top-down detector for vehicles and vulnerable road users?
+4. Can one camera network share semantics, metric depth, and 2-D detection—and
+   can uneven non-IID vehicle clients improve it through federated fine-tuning?
 
 The trajectory and segmentation studies have sealed three-seed tests: a
 temporal Fourier Neural Operator (FNO) reduces trajectory ADE from **0.673 m to
@@ -22,6 +24,16 @@ The final hybrid reaches AP@0.30 of **0.616 vehicle, 0.530 pedestrian, and 0.328
 cyclist**, while a vehicle pass-through rule prevents camera fusion from
 degrading the LiDAR vehicle branch.
 
+The camera multi-task extension finds a more nuanced result. Hard sharing
+collapses thin-lane segmentation, while a 19.8M-parameter split-decoder model
+retains one shared encoder and restores task-specific spatial decoding. It uses
+about 54% fewer parameters than three separate networks. Four simulated
+collection-car clients then test pooled tuning, uniform averaging,
+sample-weighted model-delta FedAvg, FedProx, head-only FedAvg, and gradient-only
+FedSGD. The local-optimizer methods retain round zero, while sample-weighted
+FedSGD selects round 7 and improves the composite test score from **0.339 to
+0.344**, mainly through better sparse metric depth.
+
 ![Model input, architecture, and output overview](reports/figures/model_architecture_overview.png)
 
 ![Trajectory benchmark](reports/figures/dynamics_test_ade.png)
@@ -29,6 +41,10 @@ degrading the LiDAR vehicle branch.
 ![Camera, LiDAR-only BEV, fused BEV, and labels](reports/figures/bev_v2_fusion_comparison.png)
 
 ![ZOD camera–LiDAR fusion comparison](reports/figures/bev_v2_fusion_comparison.gif)
+
+![Camera multi-task inference gallery](reports/figures/multitask_camera_inference.gif)
+
+[Open the camera multi-task inference video (MP4)](reports/figures/multitask_camera_inference.mp4)
 
 ## Headline results
 
@@ -119,6 +135,51 @@ from scratch on 70 recordings overfits and is not competitive with transfer
 learning. The earlier 12-frame mini transfer remains a historical smoke test,
 not the headline result.
 
+### Multi-task camera perception and federated fine-tuning
+
+![Multi-task and federated-learning pipeline](reports/figures/multitask_federated_pipeline.png)
+
+One 192×320 front image feeds a shared ResNet-18 encoder. The model predicts
+19-class Cityscapes teacher semantics, native ZOD road/lane affordances, sparse-
+LiDAR-supervised monocular depth, and native ZOD 2-D object centers. Teacher
+mIoU measures distillation fidelity—not ZOD semantic ground-truth accuracy.
+
+| Frozen camera model | Params | Teacher mIoU ↑ | Lane tolerant F1 ↑ | Depth δ<1.25 ↑ | 2-D mAP50 ↑ | Latency |
+|---|---:|---:|---:|---:|---:|---:|
+| Separate task controls | 43.4M total | 0.228 | 0.630 | 0.354 | **0.034** | 9.1 ms total |
+| Hard-shared, equal loss | **14.5M** | 0.187 | 0.000 | **0.387** | 0.029 | **3.1 ms** |
+| **Split decoder, equal loss** | **19.8M** | 0.225 | **0.705** | 0.358 | 0.025 | 4.7 ms |
+
+The table compares each multi-task output with the corresponding single-task
+control. Hard sharing is the negative-transfer control: its shared decoder
+loses the thin lane task, and measured encoder gradients show segmentation–depth
+conflict. Independent task decoders recover lane detail while preserving a
+single encoder pass. Learned uncertainty weighting is also retained, but equal
+weighting wins the frozen validation rule by a small margin.
+
+The centralized training role is divided into 220 initial samples and four
+collection-car clients with **65/40/25/15** additional samples. Their LiDAR-
+depth coverage is **22/11/6/2**, and their country/object distributions differ.
+Sample-weighted FedAvg assigns weights **0.448/0.276/0.172/0.103**; uniform
+averaging is the control that overweights the smallest client.
+
+![Central and federated camera benchmark](reports/figures/multitask_federated_benchmark.png)
+
+Pooled fine-tuning, uniform averaging, model-delta FedAvg, FedProx, and encoder-
+frozen FedAvg remain below the centralized validation score of **0.372**.
+Gradient-only FedSGD behaves differently: a validation-only learning-rate sweep
+selects \(\eta=0.003\) and round 7 at **0.377**. Its test score rises from
+**0.339 to 0.344**, with depth \(\delta_1\) improving from **0.359 to 0.382**;
+detection mAP50 slips from 0.025 to 0.023, so this is a measured multi-task
+trade rather than an across-the-board win.
+
+FedAvg now transmits explicit model deltas and FedSGD transmits mean parameter
+gradients. Dense deltas and gradients are still approximately 75.5 MiB per
+client for this FP32 model. This is a federated-optimization mechanics study,
+not a privacy claim: there is no secure aggregation, differential privacy, or
+adversarial-server evaluation. The pooled control deliberately centralizes its
+samples and is not described as federated.
+
 ## What is unusual about the project
 
 - **True multiple shooting.** NeuralODE training solves three shorter initial
@@ -145,6 +206,10 @@ not the headline result.
 - **Metric geometry stays explicit.** ZOD sensor calibration, ego-frame axes,
   oriented polygon IoU, Kalman state transitions, and every raster convention
   are implemented and tested rather than buried inside a visualization.
+- **Federated updates must earn promotion.** Client quantity, domain, and label
+  availability are deliberately non-IID; pooled tuning, model-delta FedAvg,
+  FedProx, head-only aggregation, and gradient-only FedSGD all compete with
+  round zero rather than assuming a fleet update must help.
 
 ## Learn the project in order
 
@@ -159,11 +224,14 @@ The executed notebooks are the main teaching surface:
 | `04_road_lane_segmentation.ipynb` | Polygon rasterization, resize/augmentation rules, normalized batches, U-Net skips, imbalance, thresholds, and thin-lane metrics |
 | `05_lidar_bev_detection_and_tracking.ipynb` | Point-cloud validation, SE(3), BEV rasterization, heatmap targets, temporal sweeps, transfer learning, fusion, AP/calibration, and tracking |
 | `06_project_synthesis.ipynb` | A personal end-to-end reconstruction of the data paths, comparisons, failure analysis, and implementation map |
+| `07_multitask_federated_perception.ipynb` | Pseudo-label provenance, LiDAR depth projection, center targets, multi-task losses, gradient conflict, model-delta FedAvg, gradient-only FedSGD, communication, and privacy boundaries |
 
 The mathematical reference is [methods.md](docs/methods.md), the exact data and
 evaluation contract is [data_and_evaluation.md](docs/data_and_evaluation.md),
 and the conclusions I use when returning to the work are in
 [project_learning_review.md](docs/project_learning_review.md).
+The new camera/fleet experiment has its own literature and claim record in
+[multitask_federated_learning.md](docs/multitask_federated_learning.md).
 
 ## Reproduce
 
@@ -219,6 +287,30 @@ git -C D:\datasets\zod-sfa3d checkout 0e2f0b63dc4090bd6c08e15505f11d764390087c
   --device cuda
 ```
 
+The camera multi-task/federated study follows the same external-data boundary:
+
+```powershell
+.venv\Scripts\python scripts\prepare_multitask_federated_roles.py `
+  --source-manifest D:\private\segmentation_manifest.csv `
+  --zod-root D:\datasets\zod `
+  --private-output D:\private\multitask_roles.csv
+
+.venv\Scripts\python scripts\build_multitask_federated_cache.py `
+  --private-manifest D:\private\multitask_roles.csv `
+  --zod-root D:\datasets\zod `
+  --output D:\datasets\zod-multitask-cache
+
+.venv\Scripts\python scripts\train_multitask_central.py `
+  --cache-root D:\datasets\zod-multitask-cache `
+  --output D:\private\multitask-models
+
+.venv\Scripts\python scripts\run_multitask_federated.py `
+  --cache-root D:\datasets\zod-multitask-cache `
+  --checkpoint D:\private\multitask-models\split_equal\best.pt `
+  --output D:\private\federated-models `
+  --method fedsgd --rounds 12 --learning-rate 0.003
+```
+
 The public evidence is in [RESULTS.md](reports/RESULTS.md) and the machine-readable
 [benchmark summary](reports/benchmark_summary.json). Exact private paths are
 arguments, never committed configuration.
@@ -234,6 +326,10 @@ the original mini diagnostic but still only 116 locally complete annotated
 Sequence recordings; a full-Frames confirmation remains future work. The
 statistically reliable findings are the gains over B2 and DeepLab—not the tiny
 differences between FNO and NeuralODE or between the two U-Nets.
+The federated clients are simulated sequentially on one machine; model updates
+are not protected by secure aggregation or differential privacy. The broad
+scene-semantic output is teacher distillation, so its mIoU is agreement with
+SegFormer rather than native ZOD semantic accuracy.
 
 ## ZOD attribution
 

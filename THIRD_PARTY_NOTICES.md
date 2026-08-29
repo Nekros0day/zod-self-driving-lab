@@ -16,3 +16,12 @@ licensed under the MIT License. The public report pins source commit
 SFA3D source code and checkpoint weights are not copied into this repository.
 Users obtain them from the upstream project and retain its copyright and license
 notices.
+
+## SegFormer Cityscapes teacher
+
+The camera multi-task experiment creates scene-semantic pseudo-labels with the
+published
+[NVIDIA SegFormer-B0 Cityscapes checkpoint](https://huggingface.co/nvidia/segformer-b0-finetuned-cityscapes-1024-1024).
+Teacher weights are downloaded to the user's external model cache and are not
+redistributed by this repository. Public metrics label this output as teacher
+agreement rather than native ZOD semantic ground-truth accuracy.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "zod-self-driving-lab"
 version = "1.0.0"
-description = "A ZOD deep-learning lab for trajectory forecasting, segmentation, and LiDAR BEV perception"
+description = "A ZOD deep-learning lab for trajectory, segmentation, BEV, and federated camera perception"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -24,6 +24,7 @@ dependencies = [
 zod = ["zod==0.8.0", "dataclass-wizard==0.39.1"]
 notebooks = ["jupyter>=1.0", "nbformat>=5.9", "nbclient>=0.9"]
 bev = ["opencv-python>=4.9"]
+multitask = ["transformers>=4.48,<5", "safetensors>=0.4"]
 dev = [
   "build>=1.2",
   "pytest>=8.0",
@@ -40,6 +41,8 @@ all = [
   "nbformat>=5.9",
   "nbclient>=0.9",
   "opencv-python>=4.9",
+  "transformers>=4.48,<5",
+  "safetensors>=0.4",
   "pytest>=8.0",
   "pytest-cov>=5.0",
   "ruff>=0.5",
